@@ -1,8 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useActiveGames } from '@/lib/hooks/useActiveGames';
 import { useLeaderboard } from '@/lib/hooks/useLeaderboard';
+
+const LEADERBOARD_COLLAPSED_COUNT = 2;
 
 const PHASE_LABEL: Record<string, string> = {
   LOBBY: 'Waiting to start',
@@ -103,15 +106,32 @@ export default function HomePage() {
 
 function LeaderboardSection() {
   const { entries, loading } = useLeaderboard();
+  const [expanded, setExpanded] = useState(false);
+  const visible = expanded ? entries : entries.slice(0, LEADERBOARD_COLLAPSED_COUNT);
+  const hasMore = entries.length > LEADERBOARD_COLLAPSED_COUNT;
 
   return (
     <section className="w-full max-w-md rounded-2xl bg-black/5 p-5 text-left dark:bg-white/5">
-      <h2 className="mb-3 text-center text-xl font-black">🏆 Leaderboard</h2>
+      <div className="mb-3 flex items-center justify-center gap-2">
+        <h2 className="text-xl font-black">🏆 Leaderboard</h2>
+        {hasMore && (
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            aria-label={expanded ? 'Show top 2 only' : 'Show full leaderboard'}
+            aria-expanded={expanded}
+            className="rounded-full p-1 text-lg leading-none hover:bg-black/10 dark:hover:bg-white/10"
+          >
+            <span className={`inline-block transition-transform ${expanded ? 'rotate-180' : ''}`} aria-hidden>
+              ▾
+            </span>
+          </button>
+        )}
+      </div>
       {loading && <p className="text-center opacity-60">Loading…</p>}
       {!loading && entries.length === 0 && <p className="text-center opacity-60">No scores yet — be the first!</p>}
       {!loading && entries.length > 0 && (
         <ol className="flex flex-col gap-1">
-          {entries.map((e, i) => (
+          {visible.map((e, i) => (
             <li
               key={e.name}
               className={`flex items-center justify-between rounded-lg px-3 py-2 ${
