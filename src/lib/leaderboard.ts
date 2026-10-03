@@ -55,14 +55,53 @@ export function sessionPoints(session: UsageSession): number {
 }
 
 /** One entry per distinct logged name, summed across all their sessions (lifetime) plus the last-12h engagement bonus. */
-export function aggregatePlayerScores(sessions: UsageSession[], now: number): LeaderboardEntry[] {
-  const byName = new Map<string, number>();
+// export function aggregatePlayerScores(sessions: UsageSession[], now: number): LeaderboardEntry[] {
+//   const byName = new Map<string, number>();
+//   for (const session of sessions) {
+//     const recentBonus = now - session.endedAt <= RECENT_WINDOW_MS ? RECENT_SESSION_BONUS : 0;
+//     const points = sessionPoints(session) + recentBonus;
+//     byName.set(session.name, (byName.get(session.name) ?? 0) + points);
+//   }
+//   return Array.from(byName.entries()).map(([name, score]) => ({ name, score, isRobot: false }));
+// }
+
+export function aggregatePlayerScores(
+  sessions: UsageSession[],
+  now: number
+): LeaderboardEntry[] {
+  const byName = new Map<string, {
+    lifetimeScore: number;
+    lastActivity: number;
+  }>();
+
   for (const session of sessions) {
-    const recentBonus = now - session.endedAt <= RECENT_WINDOW_MS ? RECENT_SESSION_BONUS : 0;
-    const points = sessionPoints(session) + recentBonus;
-    byName.set(session.name, (byName.get(session.name) ?? 0) + points);
+    const points = sessionPoints(session);
+
+    const existing = byName.get(session.name);
+
+    byName.set(session.name, {
+      lifetimeScore: (existing?.lifetimeScore ?? 0) + points,
+      lastActivity: Math.max(
+        existing?.lastActivity ?? 0,
+        session.endedAt
+      ),
+    });
   }
-  return Array.from(byName.entries()).map(([name, score]) => ({ name, score, isRobot: false }));
+
+  return Array.from(byName.entries()).map(([name, data]) => {
+    const inactiveMs = Math.max(0, now - data.lastActivity);
+
+    const decayFactor = Math.max(
+      0,
+      1 - inactiveMs / DECAY_WINDOW_MS
+    );
+
+    return {
+      name,
+      score: Math.round(data.lifetimeScore * decayFactor),
+      isRobot: false,
+    };
+  });
 }
 
 // --- Robots ------------------------------------------------------------
