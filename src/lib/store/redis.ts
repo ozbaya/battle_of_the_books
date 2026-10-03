@@ -97,4 +97,8 @@ export const redisStore: Store = {
   async forgetCode(code) {
     await getClient().zrem(INDEX_KEY, code);
   },
+
+  async delete(code) {
+    await Promise.all([getClient().del(key(code)), getClient().zrem(INDEX_KEY, code)]);
+  },
 };

@@ -72,7 +72,15 @@ export default function AdminPage() {
       <h1 className="text-3xl font-black">Battle of the Books — Admin</h1>
       {storeInfo && <StoreBadge info={storeInfo} />}
       <CreateGameForm onCreated={(code) => { setSelectedCode(code); refreshGames(); }} />
-      <RecentGames games={games} onSelect={setSelectedCode} onRefresh={refreshGames} />
+      <RecentGames
+        games={games}
+        onSelect={setSelectedCode}
+        onRefresh={refreshGames}
+        onDeleted={(code) => {
+          if (selectedCode === code) setSelectedCode('');
+          refreshGames();
+        }}
+      />
       {selectedCode && <ManageGame code={selectedCode} />}
     </main>
   );
@@ -244,7 +252,30 @@ function CreateGameForm({ onCreated }: { onCreated: (code: string) => void }) {
   );
 }
 
-function RecentGames({ games, onSelect, onRefresh }: { games: GameSummary[]; onSelect: (code: string) => void; onRefresh: () => void }) {
+function RecentGames({
+  games,
+  onSelect,
+  onRefresh,
+  onDeleted,
+}: {
+  games: GameSummary[];
+  onSelect: (code: string) => void;
+  onRefresh: () => void;
+  onDeleted: (code: string) => void;
+}) {
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  async function handleDelete(code: string, teamName: string) {
+    if (!confirm(`Delete game ${code} (${teamName})? This can't be undone.`)) return;
+    setDeleting(code);
+    try {
+      await fetch(`/api/admin/games/${code}`, { method: 'DELETE' });
+      onDeleted(code);
+    } finally {
+      setDeleting(null);
+    }
+  }
+
   return (
     <section className="flex flex-col gap-2 rounded-2xl border border-neutral-200 p-5 dark:border-neutral-800">
       <div className="flex items-center justify-between">
@@ -256,9 +287,16 @@ function RecentGames({ games, onSelect, onRefresh }: { games: GameSummary[]; onS
       {games.length === 0 && <p className="opacity-60">No games yet.</p>}
       <ul className="flex flex-col gap-1">
         {games.map((g) => (
-          <li key={g.code}>
-            <button onClick={() => onSelect(g.code)} className="w-full rounded-lg px-3 py-2 text-left hover:bg-black/5 dark:hover:bg-white/5">
+          <li key={g.code} className="flex items-center gap-1">
+            <button onClick={() => onSelect(g.code)} className="flex-1 rounded-lg px-3 py-2 text-left hover:bg-black/5 dark:hover:bg-white/5">
               <span className="font-mono font-bold">{g.code}</span> — {g.teamName} ({g.difficulty}) — {g.phase}
+            </button>
+            <button
+              onClick={() => handleDelete(g.code, g.teamName)}
+              disabled={deleting === g.code}
+              className="rounded-lg px-3 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-40 dark:text-rose-400 dark:hover:bg-rose-950"
+            >
+              {deleting === g.code ? 'Deleting…' : 'Delete'}
             </button>
           </li>
         ))}

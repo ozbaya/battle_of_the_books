@@ -40,4 +40,8 @@ export const memoryStore: Store = {
   async forgetCode(code) {
     gamesMap().delete(code);
   },
+
+  async delete(code) {
+    gamesMap().delete(code);
+  },
 };

@@ -46,6 +46,11 @@ export async function insertGame(code: string, state: GameState): Promise<void> 
   await pickStore().create(code, state);
 }
 
+/** The admin's "delete dead game" action — permanent, not a soft/expire-only removal. */
+export async function deleteGame(code: string): Promise<void> {
+  await pickStore().delete(code);
+}
+
 export async function getGame(code: string): Promise<GameState | null> {
   return pickStore().load(code);
 }

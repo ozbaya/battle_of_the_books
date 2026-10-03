@@ -13,4 +13,6 @@ export interface Store {
   listCodes(limit: number): Promise<string[]>;
   /** Best-effort cleanup when a listed code turns out to be gone (e.g. expired). No-op where irrelevant. */
   forgetCode(code: string): Promise<void>;
+  /** Permanently removes a game (the admin's "delete dead game" action) — the key and its index entry. */
+  delete(code: string): Promise<void>;
 }

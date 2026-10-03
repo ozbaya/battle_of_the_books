@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { isAuthorizedAdmin } from '@/lib/admin-auth';
 import { applyAdminOverride, applyEndGame, applyStart, toPublicGameState } from '@/lib/game/engine';
 import { getQuestions } from '@/lib/questions';
-import { GameNotFoundError, updateGame } from '@/lib/store';
+import { deleteGame, GameNotFoundError, updateGame } from '@/lib/store';
 
 const bodySchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('start') }),
@@ -47,4 +47,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
     throw err;
   }
+}
+
+/** Permanently deletes a game — for clearing out dead/leftover games from the admin list. */
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ code: string }> }) {
+  if (!isAuthorizedAdmin(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const { code } = await params;
+  await deleteGame(code);
+  return NextResponse.json({ ok: true });
 }
