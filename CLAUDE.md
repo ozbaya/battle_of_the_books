@@ -261,9 +261,10 @@ A second, optional file, **`questions/hard.md`**, same format and parsing as abo
 Used wherever a "Hard" difficulty is chosen:
 - **Team games**: picking Hard difficulty at game creation uses `hard.md` for that game's entire
   question bank instead of `questions.md`; Easy/Medium are unaffected.
-- **Practice and Quiz** (solo modes, §10+): a Normal/Hard toggle on each start screen, selectable
-  only once `hard.md` has at least one row (hidden otherwise, via each `/api/*/questions` route's
-  `hardAvailable` flag).
+- **Practice** (solo mode, §10+): a Normal/Hard toggle on its start screen, selectable only once
+  `hard.md` has at least one row (hidden otherwise, via `/api/practice/questions`'s `hardAvailable`
+  flag). **Quiz mode has no difficulty toggle** — it always quizzes the standard title/author pairs
+  from `questions.md`, by design.
 
 `questionSetForDifficulty()` / the `QuestionSet` type in `lib/questions.ts` is the single mapping
 difficulty → file. Ships as an empty placeholder (header only) until the admin fills it in.

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { QuestionSet } from '@/lib/questions';
 import { getQuizBank } from '@/lib/quiz';
 
 /**
@@ -10,8 +9,7 @@ import { getQuizBank } from '@/lib/quiz';
 export async function GET(request: NextRequest) {
   const indexRaw = request.nextUrl.searchParams.get('index');
   const index = indexRaw === null ? NaN : Number(indexRaw);
-  const set: QuestionSet = request.nextUrl.searchParams.get('set') === 'hard' ? 'hard' : 'standard';
-  const bank = getQuizBank(set);
+  const bank = getQuizBank();
   if (!Number.isInteger(index) || index < 0 || index >= bank.length) {
     return NextResponse.json({ error: 'Invalid index' }, { status: 400 });
   }
