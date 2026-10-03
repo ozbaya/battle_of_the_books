@@ -119,9 +119,9 @@ function LeaderboardSection() {
             onClick={() => setExpanded((v) => !v)}
             aria-label={expanded ? 'Show top 2 only' : 'Show full leaderboard'}
             aria-expanded={expanded}
-            className="rounded-full p-1 text-lg leading-none hover:bg-black/10 dark:hover:bg-white/10"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-black/10 shadow-sm hover:bg-black/20 dark:bg-white/15 dark:hover:bg-white/25"
           >
-            <span className={`inline-block transition-transform ${expanded ? 'rotate-180' : ''}`} aria-hidden>
+            <span className={`inline-block text-2xl font-black text-neutral-700 transition-transform dark:text-neutral-200 ${expanded ? 'rotate-180' : ''}`} aria-hidden>
               ▾
             </span>
           </button>
@@ -152,9 +152,6 @@ function LeaderboardSection() {
           ))}
         </ol>
       )}
-      <p className="mt-3 text-center text-xs opacity-60">
-        🤖 The robots climb when nobody&apos;s practiced in a while — keep your spot!
-      </p>
     </section>
   );
 }
