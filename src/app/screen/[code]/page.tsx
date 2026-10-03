@@ -1,6 +1,7 @@
 'use client';
 
 import { use } from 'react';
+import Link from 'next/link';
 import { JoinQR } from '@/components/JoinQR';
 import { Scoreboard } from '@/components/Scoreboard';
 import { SoundToggle } from '@/components/SoundToggle';
@@ -54,6 +55,21 @@ export default function ScreenPage({ params }: { params: Promise<{ code: string 
             </span>
           ))}
         </div>
+      </main>
+    );
+  }
+
+  if (state.phase.name === 'GAME_OVER') {
+    return (
+      <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-neutral-950 p-8 text-center text-white">
+        <SoundToggle />
+        <div className="w-full max-w-3xl">
+          <StatusBanner state={state} clockOffset={clockOffset} />
+        </div>
+        <Scoreboard state={state} />
+        <Link href="/" className="text-lg text-white/60 underline hover:text-white/80">
+          Back to home
+        </Link>
       </main>
     );
   }

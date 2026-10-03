@@ -1,6 +1,7 @@
 'use client';
 
 import { use } from 'react';
+import Link from 'next/link';
 import { Scoreboard } from '@/components/Scoreboard';
 import { useGameState } from '@/lib/hooks/useGameState';
 
@@ -55,6 +56,11 @@ export default function ScoresPage({ params }: { params: Promise<{ code: string 
           ))}
         </tbody>
       </table>
+      {state.phase.name === 'GAME_OVER' && (
+        <Link href="/" className="text-sm text-white/60 underline hover:text-white/80">
+          Back to home
+        </Link>
+      )}
     </main>
   );
 }

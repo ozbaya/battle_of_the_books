@@ -1,6 +1,7 @@
 'use client';
 
 import { use, useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { AnswerButton, type AnswerButtonStatus } from '@/components/AnswerButton';
 import type { AnswerOutcome } from '@/components/AnswerReveal';
 import { Countdown } from '@/components/Countdown';
@@ -225,6 +226,9 @@ function PlayingView({
         <a href={`/scores/${code}`} className="mt-2 text-sky-600 underline dark:text-sky-400">
           See full scores
         </a>
+        <Link href="/" className="text-sm text-neutral-500 underline hover:text-neutral-700 dark:hover:text-neutral-300">
+          Back to home
+        </Link>
       </main>
     );
   }
