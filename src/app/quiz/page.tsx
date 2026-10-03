@@ -41,16 +41,21 @@ const WRONG_ANSWER_IMAGES: QuizImage[] = [
   { src: '/quiz-wrong-answers/sad-owl.png', width: 462, height: 663, alt: 'Sad wet owlet' },
 ];
 const CELEBRATION_DISPLAY_MS = 3000;
-// Time for one leg of the jump (all the way up, or all the way down). 1.2s
-// for a full up+down cycle, 50% slower than the original 0.8s.
-const JUMP_LEG_S = 0.6;
+// Time for one leg of the jump (all the way up, or all the way down).
+// Started at 0.4s/leg, then 0.6s/leg (50% slower), now 0.9s/leg (another 50%
+// slower) — a full up+down cycle is 1.8s.
+const JUMP_LEG_S = 0.9;
 
-// A sad trumpet sting on a wrong answer — purely for fun, quiz-mode-only.
-// No unlock/gesture gating like the synthesized sounds in lib/sound.ts: by
-// the time this fires, the player has already tapped at least twice (Start
-// the quiz, then ANSWER/Submit), so autoplay restrictions don't apply.
+// A sad trumpet sting on a wrong answer, a fanfare on a correct one —
+// purely for fun, quiz-mode-only. No unlock/gesture gating like the
+// synthesized sounds in lib/sound.ts: by the time either fires, the player
+// has already tapped at least twice (Start the quiz, then ANSWER/Submit),
+// so autoplay restrictions don't apply.
 function playSadTrumpet() {
   new Audio('/quiz-sounds/sad-trumpet.mp3').play().catch(() => {});
+}
+function playFanfare() {
+  new Audio('/quiz-sounds/fanfare.mp3').play().catch(() => {});
 }
 
 function randomImage(images: QuizImage[]): QuizImage {
@@ -258,6 +263,7 @@ function QuizQuestionView({
         }
         setTimeout(() => setReadyForNext(true), WRONG_ANSWER_REVEAL_MS);
       } else if (correct) {
+        playFanfare();
         setCelebration(randomImage(CELEBRATION_IMAGES));
         setTimeout(() => setReadyForNext(true), CELEBRATION_DISPLAY_MS);
       } else {
