@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
-import type { Question } from './game/types';
+import type { Difficulty, Question } from './game/types';
 
 const questionRowSchema = z.object({
   question: z.string().min(1),
@@ -86,4 +86,9 @@ export function getQuestions(set: QuestionSet = 'standard'): Question[] {
   const filePath = path.join(process.cwd(), 'questions', QUESTION_FILES[set]);
   const content = fs.readFileSync(filePath, 'utf8');
   return parseQuestionsMarkdown(content);
+}
+
+/** Team games on "hard" difficulty draw from questions/hard.md; easy/medium use the standard set. */
+export function questionSetForDifficulty(difficulty: Difficulty): QuestionSet {
+  return difficulty === 'hard' ? 'hard' : 'standard';
 }

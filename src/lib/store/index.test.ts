@@ -8,11 +8,11 @@ import type { Store } from './types';
 
 const QUESTIONS: Question[] = [{ question: 'Q0', title: 'Holes', author: 'Louis Sachar' }];
 
-function freshGame(code: string): GameState {
+function freshGame(code: string, difficulty: GameState['difficulty'] = 'medium'): GameState {
   let state = createGame({
     code,
     teamName: 'Testers',
-    difficulty: 'medium',
+    difficulty,
     numQuestions: 1,
     totalQuestions: QUESTIONS.length,
     seed: 1,
@@ -35,10 +35,22 @@ describe('updateGameWithStore', () => {
   it('bumps version by exactly 1 per successful write that actually changes something', async () => {
     const code = `V-${Math.random()}`;
     await memoryStore.create(code, freshGame(code));
-    const after1 = await updateGameWithStore(memoryStore, code, QUESTIONS, 0, (s) => applyJoin(s, 'sam', 'Sam'));
+    const after1 = await updateGameWithStore(memoryStore, code, 0, (s) => applyJoin(s, 'sam', 'Sam'), () => QUESTIONS);
     expect(after1.version).toBe(1);
-    const after2 = await updateGameWithStore(memoryStore, code, QUESTIONS, 0, (s) => applyJoin(s, 'robin', 'Robin'));
+    const after2 = await updateGameWithStore(memoryStore, code, 0, (s) => applyJoin(s, 'robin', 'Robin'), () => QUESTIONS);
     expect(after2.version).toBe(2);
+  });
+
+  it("resolves the question bank from the game's own stored difficulty, not a caller guess", async () => {
+    const code = `D-${Math.random()}`;
+    await memoryStore.create(code, freshGame(code, 'hard'));
+    const seenDifficulties: GameState['difficulty'][] = [];
+    const resolveQuestions = (difficulty: GameState['difficulty']) => {
+      seenDifficulties.push(difficulty);
+      return QUESTIONS;
+    };
+    await updateGameWithStore(memoryStore, code, 0, (s) => applyJoin(s, 'sam', 'Sam'), resolveQuestions);
+    expect(seenDifficulties).toEqual(['hard']);
   });
 
   it('skips the write entirely — no version bump — when advance() and the action are both no-ops', async () => {
@@ -53,7 +65,7 @@ describe('updateGameWithStore', () => {
       },
     };
     const before = await memoryStore.load(code);
-    const after = await updateGameWithStore(counting, code, QUESTIONS, 0, (s) => s); // identity action, nothing to do
+    const after = await updateGameWithStore(counting, code, 0, (s) => s, () => QUESTIONS); // identity action, nothing to do
     expect(after.version).toBe(before!.version);
     expect(casSaveCalls).toBe(0);
   });
@@ -63,13 +75,13 @@ describe('updateGameWithStore', () => {
     const state = applyStart(freshGame(code), 0); // GET_READY { opensAt: GET_READY_DURATION_MS }
     await memoryStore.create(code, state);
     // now is past opensAt, so advance() alone moves GET_READY -> KIDS_ROUND even though the action is identity.
-    const after = await updateGameWithStore(memoryStore, code, QUESTIONS, GET_READY_DURATION_MS, (s) => s);
+    const after = await updateGameWithStore(memoryStore, code, GET_READY_DURATION_MS, (s) => s, () => QUESTIONS);
     expect(after.version).toBe(1);
     expect(after.phase.name).toBe('KIDS_ROUND');
   });
 
   it('throws GameNotFoundError for an unknown code', async () => {
-    await expect(updateGameWithStore(memoryStore, 'NOPE', QUESTIONS, 0, (s) => s)).rejects.toThrow(
+    await expect(updateGameWithStore(memoryStore, 'NOPE', 0, (s) => s, () => QUESTIONS)).rejects.toThrow(
       GameNotFoundError
     );
   });
@@ -80,8 +92,8 @@ describe('updateGameWithStore', () => {
     await memoryStore.create(code, opened);
     const pressAt = opened.phase.name === 'KIDS_ROUND' ? opened.phase.openedAt + 500 : 0;
     const [a, b] = await Promise.all([
-      updateGameWithStore(memoryStore, code, QUESTIONS, pressAt, (s, now) => applyPress(s, 'maya', now).state),
-      updateGameWithStore(memoryStore, code, QUESTIONS, pressAt, (s, now) => applyPress(s, 'leo', now).state),
+      updateGameWithStore(memoryStore, code, pressAt, (s, now) => applyPress(s, 'maya', now).state, () => QUESTIONS),
+      updateGameWithStore(memoryStore, code, pressAt, (s, now) => applyPress(s, 'leo', now).state, () => QUESTIONS),
     ]);
     // Both calls return a state; the store's final version reflects both writes.
     const final = await memoryStore.load(code);
@@ -108,7 +120,7 @@ describe('updateGameWithStore', () => {
         return memoryStore.casSave(c, expected, next);
       },
     };
-    const result = await updateGameWithStore(flaky, code, QUESTIONS, 0, (s) => applyJoin(s, 'sam', 'Sam'));
+    const result = await updateGameWithStore(flaky, code, 0, (s) => applyJoin(s, 'sam', 'Sam'), () => QUESTIONS);
     expect(result.version).toBe(1);
     expect(failuresLeft).toBe(0);
   });
@@ -123,7 +135,7 @@ describe('updateGameWithStore', () => {
       },
     };
     await expect(
-      updateGameWithStore(alwaysFails, code, QUESTIONS, 0, (s) => applyJoin(s, 'sam', 'Sam'))
+      updateGameWithStore(alwaysFails, code, 0, (s) => applyJoin(s, 'sam', 'Sam'), () => QUESTIONS)
     ).rejects.toThrow(CasConflictError);
   });
 });

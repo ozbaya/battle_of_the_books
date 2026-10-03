@@ -1,6 +1,7 @@
 import { CAS_MAX_RETRIES } from '../game/config';
 import { advance } from '../game/engine';
-import type { GameState, Question } from '../game/types';
+import type { Difficulty, GameState, Question } from '../game/types';
+import { getQuestions, questionSetForDifficulty } from '../questions';
 import type { UsageSession } from '../usage';
 import { memoryStore } from './memory';
 import { findRedisCredentials, redisStore } from './redis';
@@ -108,11 +109,24 @@ export async function listUsage(limit: number): Promise<UsageSession[]> {
   return pickStore().listUsage(limit);
 }
 
+/** The real question resolver: picks the bank from the game's own stored difficulty. */
+function resolveQuestionsForDifficulty(difficulty: Difficulty): Question[] {
+  return getQuestions(questionSetForDifficulty(difficulty));
+}
+
 /**
  * load -> advance -> act -> CAS-save, retrying on conflict. Used by every
  * route, including the read-only /state poll (whose "action" is the identity
  * function) — this is how lazy time-based transitions actually get persisted
  * between client polls (CLAUDE.md §4.1).
+ *
+ * Which question bank applies depends on the game's own `difficulty`, which
+ * is only known *after* loading state — so questions are resolved from the
+ * freshly-loaded state inside this function, not passed in by the caller.
+ * That keeps it to a single store read per attempt (no separate "peek at
+ * difficulty first" round trip) and guarantees a game always stays
+ * consistent with whichever bank it was created against, regardless of
+ * which request happens to be the one advancing it.
  *
  * When neither advance() nor the action actually changed anything — the
  * common case for a /state poll during a quiet stretch, or a press/join/etc.
@@ -123,24 +137,24 @@ export async function listUsage(limit: number): Promise<UsageSession[]> {
  */
 export async function updateGame(
   code: string,
-  questions: Question[],
   now: number,
   fn: (state: GameState, now: number) => GameState
 ): Promise<GameState> {
-  return updateGameWithStore(pickStore(), code, questions, now, fn);
+  return updateGameWithStore(pickStore(), code, now, fn, resolveQuestionsForDifficulty);
 }
 
-/** Exported separately so tests can inject a store that fails on demand. */
+/** Exported separately so tests can inject a store that fails on demand, and a fixed question fixture instead of the real files. */
 export async function updateGameWithStore(
   store: Store,
   code: string,
-  questions: Question[],
   now: number,
-  fn: (state: GameState, now: number) => GameState
+  fn: (state: GameState, now: number) => GameState,
+  resolveQuestions: (difficulty: Difficulty) => Question[] = resolveQuestionsForDifficulty
 ): Promise<GameState> {
   for (let attempt = 0; attempt < CAS_MAX_RETRIES; attempt++) {
     const loaded = await store.load(code);
     if (!loaded) throw new GameNotFoundError(code);
+    const questions = resolveQuestions(loaded.difficulty);
     const advanced = advance(loaded, now, questions);
     const acted = fn(advanced, now);
     if (acted === loaded) return loaded;

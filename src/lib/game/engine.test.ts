@@ -180,7 +180,7 @@ describe('robot timing per difficulty', () => {
   it.each([
     ['easy', 7000],
     ['medium', 5000],
-    ['hard', 2000],
+    ['hard', 5000],
   ] as const)('robotBuzzAt = openedAt + %s delay (%s)', (difficulty, delay) => {
     const { state, openedAt } = openFirstQuestion(difficulty);
     const phase = expectPhase(state, 'KIDS_ROUND');
@@ -189,7 +189,7 @@ describe('robot timing per difficulty', () => {
 
   it('robot plan is identical across repeated advance() calls with the same seed/questionIndex/attempt', () => {
     const { state, openedAt } = openFirstQuestion('hard');
-    const buzzAt = openedAt + 2000;
+    const buzzAt = openedAt + 5000;
     const a = advance(state, buzzAt, QUESTIONS);
     const b = advance(state, buzzAt, QUESTIONS); // simulates a retried CAS write re-deriving from the same stale state
     const phaseA = expectPhase(a, 'ROBOT_ANSWERING');
@@ -217,7 +217,7 @@ describe('phase diagram — forward flow', () => {
 
   it('KIDS_ROUND transitions to ROBOT_ANSWERING at robotBuzzAt when no kid has pressed', () => {
     const { state, openedAt } = openFirstQuestion('hard');
-    const after = advance(state, openedAt + 2000, QUESTIONS);
+    const after = advance(state, openedAt + 5000, QUESTIONS);
     expectPhase(after, 'ROBOT_ANSWERING');
   });
 
@@ -236,7 +236,7 @@ describe('phase diagram — forward flow', () => {
     let found = false;
     for (let seed = 0; seed < 50 && !found; seed++) {
       const g = { ...state, seed };
-      const buzzAt = openedAt + 2000;
+      const buzzAt = openedAt + 5000;
       const robotPhase = advance(g, buzzAt, QUESTIONS);
       if (robotPhase.phase.name === 'ROBOT_ANSWERING' && robotPhase.phase.plan.titleCorrect) {
         const revealed = advance(robotPhase, robotPhase.phase.revealAt, QUESTIONS);
@@ -253,7 +253,7 @@ describe('phase diagram — forward flow', () => {
     let found = false;
     for (let seed = 0; seed < 50 && !found; seed++) {
       const g = { ...state, seed };
-      const buzzAt = openedAt + 2000;
+      const buzzAt = openedAt + 5000;
       const robotPhase = advance(g, buzzAt, QUESTIONS);
       if (robotPhase.phase.name === 'ROBOT_ANSWERING' && !robotPhase.phase.plan.titleCorrect) {
         const revealed = advance(robotPhase, robotPhase.phase.revealAt, QUESTIONS);

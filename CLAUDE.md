@@ -125,10 +125,11 @@ All game URLs are keyed by a short, kid-friendly **game code** (e.g. `OWL42`).
 - **Difficulty = robot response time** (for both first buzz and steals):
   - Easy: **7 s**
   - Medium: **5 s**
-  - Hard: **2 s**
+  - Hard: **5 s**
 - Robot accuracy is fixed for now (`ROBOT_ACCURACY`, default 0.6 correct; of correct answers, ~80% include the author). Keep accuracy in the difficulty config object so it can vary by difficulty later.
 - Robot answer outcomes (first attempt and steal) are decided (seeded random) **when the question opens** and stored in state, so they are deterministic across serverless invocations.
-- Robot answers are displayed as text: correct → the real title/author; wrong → a different book/author from `questions/questions.md`.
+- Robot answers are displayed as text: correct → the real title/author; wrong → a different book/author from the same question set as the game (see below).
+- **Hard difficulty swaps the question set**, not just the robot timing: a Hard game draws its questions from `questions/hard.md` (same table format, admin-authored) instead of `questions/questions.md`. Easy and Medium use the standard set. `questionSetForDifficulty()` in `lib/questions.ts` is the single mapping from difficulty to file; every route that loads a game's questions derives the set from the game's own stored `difficulty` after loading state (never guesses it up front), so mid-game question-bank consistency holds regardless of which request happens to advance the game.
 
 ### Assumptions (confirm with the user if behavior seems off)
 - Robots get a steal attempt when the team's first respondent is wrong or doesn't record (symmetry with the kids' steal).
@@ -254,6 +255,19 @@ Parsing (`lib/questions.ts`):
 - Ship the file with ~10 well-known books so the app works out of the box.
 - **The admin sets the number of questions** when creating a game (required; 1 … number of rows, default 10 or all if fewer). The game picks that many distinct questions at random.
 
+### 5.1 Hard question set
+
+A second, optional file, **`questions/hard.md`**, same format and parsing as above, admin-authored.
+Used wherever a "Hard" difficulty is chosen:
+- **Team games**: picking Hard difficulty at game creation uses `hard.md` for that game's entire
+  question bank instead of `questions.md`; Easy/Medium are unaffected.
+- **Practice and Quiz** (solo modes, §10+): a Normal/Hard toggle on each start screen, selectable
+  only once `hard.md` has at least one row (hidden otherwise, via each `/api/*/questions` route's
+  `hardAvailable` flag).
+
+`questionSetForDifficulty()` / the `QuestionSet` type in `lib/questions.ts` is the single mapping
+difficulty → file. Ships as an empty placeholder (header only) until the admin fills it in.
+
 ---
 
 ## 6. Audio, transcription & judging
@@ -312,7 +326,7 @@ and only the final state write goes through CAS. The OpenAI key is used only on 
 ## 7. Admin
 
 - Protected by `ADMIN_PASSWORD` env var: `/api/admin/login` sets an httpOnly signed cookie; all `/api/admin/*` routes check it.
-- **Create game**: team name, difficulty (Easy 7 s / Medium 5 s / Hard 2 s), **number of questions**. Returns the game code and links to `/play`, `/screen`, `/scores`.
+- **Create game**: team name, difficulty (Easy 7 s / Medium 5 s / Hard 5 s, Hard also drawing questions from `questions/hard.md`), **number of questions**. Returns the game code and links to `/play`, `/screen`, `/scores`.
 - **Start game** (from the lobby, once the kids have joined) and **End game** (moves to `GAME_OVER` immediately). Everything in between runs automatically — no "next question" button.
 - **Override judgment**: lists answers (current and past questions) with transcript + verdict and buttons **Full (+2) / Title (+1) / Wrong (−0.5) / No answer (0)** to fix mis-transcriptions. Overrides recompute individual and team scores from `history`.
 - List of recent games; games expire from Redis after 24 h (`EX`).

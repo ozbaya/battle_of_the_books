@@ -4,7 +4,7 @@ import { isAuthorizedAdmin } from '@/lib/admin-auth';
 import { DEFAULT_NUM_QUESTIONS } from '@/lib/game/config';
 import { createGame } from '@/lib/game/engine';
 import { generateGameCode } from '@/lib/game-code';
-import { getQuestions } from '@/lib/questions';
+import { getQuestions, questionSetForDifficulty } from '@/lib/questions';
 import { getGame, getStoreDiagnostics, insertGame, listRecentGames } from '@/lib/store';
 
 const createSchema = z.object({
@@ -24,7 +24,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.message }, { status: 400 });
   }
 
-  const questions = getQuestions();
+  // Hard-difficulty games draw from the harder question set (CLAUDE.md §5.1);
+  // easy/medium use the standard one.
+  const questions = getQuestions(questionSetForDifficulty(parsed.data.difficulty));
   const requested = parsed.data.numQuestions ?? Math.min(DEFAULT_NUM_QUESTIONS, questions.length);
   const numQuestions = Math.max(1, Math.min(requested, questions.length));
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { isAuthorizedAdmin } from '@/lib/admin-auth';
 import { applyAdminOverride, applyEndGame, applyStart, toPublicGameState } from '@/lib/game/engine';
-import { getQuestions } from '@/lib/questions';
+import { getQuestions, questionSetForDifficulty } from '@/lib/questions';
 import { deleteGame, GameNotFoundError, updateGame } from '@/lib/store';
 
 const bodySchema = z.discriminatedUnion('action', [
@@ -27,10 +27,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: parsed.error.message }, { status: 400 });
   }
 
-  const questions = getQuestions();
   const now = Date.now();
   try {
-    const state = await updateGame(code, questions, now, (s, n) => {
+    const state = await updateGame(code, now, (s, n) => {
       switch (parsed.data.action) {
         case 'start':
           return applyStart(s, n);
@@ -40,6 +39,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           return applyAdminOverride(s, parsed.data.historyIndex, parsed.data.bucket);
       }
     });
+    const questions = getQuestions(questionSetForDifficulty(state.difficulty));
     return NextResponse.json(toPublicGameState(state, questions, now, process.env.MOCK_AI === 'true'));
   } catch (err) {
     if (err instanceof GameNotFoundError) {

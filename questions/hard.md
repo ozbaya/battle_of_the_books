@@ -62,7 +62,7 @@
 | In what book does a student have to confront the consequences of believing a classmate's unlikely claim? | Freckle Juice | Judy Blume |
 | In what book does a supposed solution to a boy's problem turn into an embarrassing classroom spectacle? | Freckle Juice | Judy Blume |
 | In what book does the main character learn that getting what he thought he wanted does not necessarily solve his problem? | Freckle Juice | Judy Blume |
-| In what book does a dog named Bobbie travel an extraordinary distance to return to his family? | Bobbie the Wonder Dog: A True Story | Tricia Brown |
+| In what book does a dog travel an extraordinary distance to return to his family? | Bobbie the Wonder Dog: A True Story | Tricia Brown |
 | In what book does a family lose track of a dog while traveling far from home? | Bobbie the Wonder Dog: A True Story | Tricia Brown |
 | In what book does a dog disappear after being separated from his owners in a strange town? | Bobbie the Wonder Dog: A True Story | Tricia Brown |
 | In what book do people begin wondering how an animal could have found its way home from such a great distance? | Bobbie the Wonder Dog: A True Story | Tricia Brown |
@@ -82,7 +82,7 @@
 | In what book do people try to calculate or estimate how far a dog must have traveled? | Bobbie the Wonder Dog: A True Story | Tricia Brown |
 | In what book is an animal's loyalty to his family demonstrated through a journey lasting many weeks? | Bobbie the Wonder Dog: A True Story | Tricia Brown |
 | In what book does a real-life dog's mysterious return become the reason he is remembered as a wonder dog? | Bobbie the Wonder Dog: A True Story | Tricia Brown |
-| In what book does a dog named Tornado become the focus of stories told by a group of children? | Tornado | Betsy Byars |
+| In what book does a dog become the focus of stories told by a group of children? | Tornado | Betsy Byars |
 | In what book does a man tell children stories about a dog while a storm approaches? | Tornado | Betsy Byars |
 | In what book does a dog have a connection to a man who works around a farm? | Tornado | Betsy Byars |
 | In what book does a storyteller use memories of a dog to entertain children during bad weather? | Tornado | Betsy Byars |
@@ -142,15 +142,15 @@
 | In what book does handwriting become important because adults cannot easily interpret it? | Muggie Maggie | Beverly Cleary |
 | In what book does a girl find herself taking an interest in something she had previously dismissed? | Muggie Maggie | Beverly Cleary |
 | In what book does a classroom problem give a reluctant student an unexpected chance to demonstrate what she can do? | Muggie Maggie | Beverly Cleary |
-| In what book does Nick Allen deliberately ask a question about where dictionary words come from? | Frindle | Andrew Clements |
+| In what book does a student deliberately ask a question about where dictionary words come from? | Frindle | Andrew Clements |
 | In what book does a teacher respond to a delaying question by assigning the student an oral report? | Frindle | Andrew Clements |
 | In what book does a student use a dictionary-based assignment as the starting point for inventing a new word? | Frindle | Andrew Clements |
-| In what book does a boy choose a new name for an ordinary writing instrument? | Frindle | Andrew Clements |
+| In what book does a student give an ordinary school object a new name? | Frindle | Andrew Clements |
 | In what book does a teacher secretly cooperate with a student while appearing to oppose him? | Frindle | Andrew Clements |
 | In what book does a teacher place a letter in an envelope and ask a student to sign and date it? | Frindle | Andrew Clements |
 | In what book does a school principal visit a student's parents because of a dispute over language? | Frindle | Andrew Clements |
 | In what book do students deliberately ask the same teacher for the same object until many of them receive detention? | Frindle | Andrew Clements |
-| In what book does a student discover that a word can become real because enough people agree to use it? | Frindle | Andrew Clements |
+| In what book does a student discover that repeated use can make an invented expression catch on? | Frindle | Andrew Clements |
 | In what book does a teacher's favorite classroom object play an important role in inspiring a student's scheme? | Frindle | Andrew Clements |
 | In what book does a student give a long oral report partly because he is trying to make a point about language? | Frindle | Andrew Clements |
 | In what book does a classroom prank eventually become a nationwide commercial phenomenon? | Frindle | Andrew Clements |
@@ -160,7 +160,7 @@
 | In what book does a boy's parents become involved after the school claims his behavior is causing problems? | Frindle | Andrew Clements |
 | In what book does the protagonist initially intend to delay homework but instead receives more homework? | Frindle | Andrew Clements |
 | In what book does a teacher understand the significance of a student's invented word before most other adults do? | Frindle | Andrew Clements |
-| In what book does a word invented by a child eventually appear in dictionaries? | Frindle | Andrew Clements |
+| In what book does an expression created by a student eventually become officially recognized? | Frindle | Andrew Clements |
 | In what book does a student eventually discover that his teacher had understood his larger plan all along? | Frindle | Andrew Clements |
 | In what book do a brother and sister compete against each other by selling lemonade? | The Lemonade War | Jacqueline Davies |
 | In what book does one sibling worry that the other is being moved ahead in school? | The Lemonade War | Jacqueline Davies |
@@ -203,9 +203,9 @@
 | In what book does a party in an older woman's garden bring together people who initially seem unlikely to become friends? | Because of Winn-Dixie | Kate DiCamillo |
 | In what book does a dog become the reason a lonely girl begins building a community of friends? | Because of Winn-Dixie | Kate DiCamillo |
 | In what book do children in one country send packages to a girl in another country after hearing about shortages following a war? | Boxes for Katje | Candace Fleming |
-| In what book does a girl named Katje receive letters from children who have never met her? | Boxes for Katje | Candace Fleming |
+| In what book does a young girl receive letters from children who have never met her? | Boxes for Katje | Candace Fleming |
 | In what book does a box sent across the ocean contain items gathered by children? | Boxes for Katje | Candace Fleming |
-| In what book does a child named Rosie become involved in helping a girl she knows only through letters? | Boxes for Katje | Candace Fleming |
+| In what book does another child become involved in helping a girl she knows only through letters? | Boxes for Katje | Candace Fleming |
 | In what book do children discover that seemingly ordinary household items can be extremely valuable to people living with shortages? | Boxes for Katje | Candace Fleming |
 | In what book does a group of children organize donations rather than simply giving away their own possessions? | Boxes for Katje | Candace Fleming |
 | In what book does a correspondence between two girls grow into a friendship across national borders? | Boxes for Katje | Candace Fleming |
@@ -223,7 +223,7 @@
 | In what book do letters become almost as important as the physical packages being sent? | Boxes for Katje | Candace Fleming |
 | In what book does a friendship between children demonstrate how people can help strangers living thousands of miles away? | Boxes for Katje | Candace Fleming |
 | In what book do two alligators work as investigators and travel through underground tunnels? | InvestiGators | John Patrick Green |
-| In what book does an investigator named Mango work with an investigator named Brash? | InvestiGators | John Patrick Green |
+| In what book does one investigator work with one investigator? | InvestiGators | John Patrick Green |
 | In what book do investigators use a toilet as a means of transportation? | InvestiGators | John Patrick Green |
 | In what book do two investigators use disguises while attempting to solve a mystery? | InvestiGators | John Patrick Green |
 | In what book does an investigation involve a suspicious villain whose plans are connected to a secret underground operation? | InvestiGators | John Patrick Green |
@@ -233,7 +233,7 @@
 | In what book do investigators travel through a network of pipes to reach their destination? | InvestiGators | John Patrick Green |
 | In what book does the team have to use detective skills while dealing with an enemy who has prepared traps? | InvestiGators | John Patrick Green |
 | In what book are secret agents also reptiles? | InvestiGators | John Patrick Green |
-| In what book does a character named Mango demonstrate that an investigator can be both serious about the job and ridiculous at the same time? | InvestiGators | John Patrick Green |
+| In what book does one investigator demonstrate that an investigator can be both serious about the job and ridiculous at the same time? | InvestiGators | John Patrick Green |
 | In what book does an investigation take place partly beneath ordinary human locations? | InvestiGators | John Patrick Green |
 | In what book do the protagonists rely on unusual gadgets during their investigations? | InvestiGators | John Patrick Green |
 | In what book does the heroes’ species become part of the humor surrounding their detective work? | InvestiGators | John Patrick Green |
@@ -242,8 +242,8 @@
 | In what book does teamwork between two agents repeatedly save them when individual plans go wrong? | InvestiGators | John Patrick Green |
 | In what book does an investigator's physical abilities as an alligator become useful during a mission? | InvestiGators | John Patrick Green |
 | In what book are detective fiction, secret-agent stories and alligator jokes deliberately combined? | InvestiGators | John Patrick Green |
-| In what book does Michael Rosario become fascinated by a boy who appears to have come from another time? | The First State of Being | Erin Entrada Kelly |
-| In what book does a character named Ridge claim to be from the future? | The First State of Being | Erin Entrada Kelly |
+| In what book does a boy become fascinated by a boy who appears to have come from another time? | The First State of Being | Erin Entrada Kelly |
+| In what book does a mysterious boy claim to be from the future? | The First State of Being | Erin Entrada Kelly |
 | In what book does Michael hide or protect an extraordinary secret while trying to understand what has happened? | The First State of Being | Erin Entrada Kelly |
 | In what book does a boy from another time struggle with ordinary life in the present? | The First State of Being | Erin Entrada Kelly |
 | In what book does a friendship develop between a present-day boy and someone who should not exist in his time? | The First State of Being | Erin Entrada Kelly |
@@ -251,9 +251,9 @@
 | In what book does Michael's mother have an important influence on his everyday life? | The First State of Being | Erin Entrada Kelly |
 | In what book does a boy have to decide whether to trust someone whose story seems impossible? | The First State of Being | Erin Entrada Kelly |
 | In what book does a character's knowledge of the future create both excitement and danger? | The First State of Being | Erin Entrada Kelly |
-| In what book does Michael and Gibby discuss the strange boy they have encountered? | The First State of Being | Erin Entrada Kelly |
+| In what book does two friends discuss the strange boy they have encountered? | The First State of Being | Erin Entrada Kelly |
 | In what book does the discovery of someone from another era cause ordinary events to take on a different meaning? | The First State of Being | Erin Entrada Kelly |
-| In what book does a boy named Joseph become important to the mystery surrounding Ridge? | The First State of Being | Erin Entrada Kelly |
+| In what book does another boy become important to the mystery surrounding Ridge? | The First State of Being | Erin Entrada Kelly |
 | In what book does a character have to consider whether changing the past could affect the future? | The First State of Being | Erin Entrada Kelly |
 | In what book does the protagonist live in Delaware during the events of the story? | The First State of Being | Erin Entrada Kelly |
 | In what book does an unusual visitor cause a boy to question what he knows about his own time period? | The First State of Being | Erin Entrada Kelly |
@@ -267,25 +267,25 @@
 | In what book does a girl communicate with someone she believes is a famous male adventurer? | Nim's Island | Wendy Orr |
 | In what book does the person behind a famous adventure-book character turn out to be very different from the character? | Nim's Island | Wendy Orr |
 | In what book does a girl care for sea-turtle eggs while her father is away? | Nim's Island | Wendy Orr |
-| In what book does a bearded dragon named Fred live with the main character? | Nim's Island | Wendy Orr |
-| In what book does a sea lion named Selkie help rescue someone from the ocean? | Nim's Island | Wendy Orr |
-| In what book does a pelican named Galileo live with a girl on an isolated island? | Nim's Island | Wendy Orr |
+| In what book does a reptile live with the main character? | Nim's Island | Wendy Orr |
+| In what book does a sea lion help rescue someone from the ocean? | Nim's Island | Wendy Orr |
+| In what book does a pelican live with a girl on an isolated island? | Nim's Island | Wendy Orr |
 | In what book does a character try to scare away visitors by making an island appear dangerous? | Nim's Island | Wendy Orr |
 | In what book does an attempt to create the appearance of a volcanic eruption accidentally contribute to a real eruption? | Nim's Island | Wendy Orr |
-| In what book does a boy named Edmund discover that a girl really lives on the island? | Nim's Island | Wendy Orr |
+| In what book does a boy discover that a girl really lives on the island? | Nim's Island | Wendy Orr |
 | In what book does a famous fictional adventurer exist in the imagination of a lonely writer? | Nim's Island | Wendy Orr |
 | In what book does an author communicate with a marine biologist while trying to research a book? | Nim's Island | Wendy Orr |
 | In what book does the protagonist initially assume that the person responding to her messages is a man? | Nim's Island | Wendy Orr |
 | In what book does a writer who rarely leaves home eventually travel across the world to help a child? | Nim's Island | Wendy Orr |
 | In what book does a character use a satellite phone to stay in contact with her father? | Nim's Island | Wendy Orr |
-| In what book does a girl have several animal companions instead of other children as her closest friends? | Nim's Island | Wendy Orr |
+| In what book does a girl rely on unusual animal companions because she lives far from other people? | Nim's Island | Wendy Orr |
 | In what book does the protagonist's mother have died before the main events of the story begin? | Nim's Island | Wendy Orr |
 | In what book does a fictional character seem to encourage his real-world creator to be braver? | Nim's Island | Wendy Orr |
 | In what book does a father eventually return to his daughter using an improvised sailing craft? | Nim's Island | Wendy Orr |
 | In what book does Clementine get into trouble because of something she does to her friend's hair? | Clementine | Sara Pennypacker |
 | In what book does a girl misunderstand why her teacher is unhappy with her? | Clementine | Sara Pennypacker |
 | In what book does a child believe she is helping a friend but actually creates a new problem? | Clementine | Sara Pennypacker |
-| In what book does a girl have a difficult relationship with a classmate named Margaret? | Clementine | Sara Pennypacker |
+| In what book does a girl have a difficult relationship with a classmate? | Clementine | Sara Pennypacker |
 | In what book does the protagonist repeatedly try to do what she thinks is helpful even when adults disagree? | Clementine | Sara Pennypacker |
 | In what book does a girl's impulsive behavior cause her parents to become frustrated with her? | Clementine | Sara Pennypacker |
 | In what book does the protagonist become especially upset when she thinks her family might move away? | Clementine | Sara Pennypacker |
@@ -303,7 +303,7 @@
 | In what book does a protagonist's strong imagination influence the way she understands everyday events? | Clementine | Sara Pennypacker |
 | In what book does a child eventually recognize that friendship and family relationships are more complicated than she first thought? | Clementine | Sara Pennypacker |
 | In what book do three boys discover a magical book while sitting in a treehouse? | Knights of the Kitchen Table | Jon Scieszka |
-| In what book does a character named Fred become involved in an adventure involving King Arthur? | Knights of the Kitchen Table | Jon Scieszka |
+| In what book does one of the boys become involved in an adventure involving King Arthur? | Knights of the Kitchen Table | Jon Scieszka |
 | In what book do modern children suddenly find themselves in a medieval world? | Knights of the Kitchen Table | Jon Scieszka |
 | In what book does a magical book transport children into the world of knights? | Knights of the Kitchen Table | Jon Scieszka |
 | In what book do children encounter a dragon after being transported into a story? | Knights of the Kitchen Table | Jon Scieszka |
@@ -322,7 +322,7 @@
 | In what book does a magical adventure begin with children who are not expecting anything extraordinary to happen? | Knights of the Kitchen Table | Jon Scieszka |
 | In what book does the friendship among three boys help them survive an adventure involving knights and monsters? | Knights of the Kitchen Table | Jon Scieszka |
 | In what book does the boundary between a children's game and a genuine medieval adventure disappear? | Knights of the Kitchen Table | Jon Scieszka |
-| In what book does a girl named Carmen find herself in Boston during the Great Molasses Flood? | I Survived the Great Molasses Flood, 1919 | Lauren Tarshis |
+| In what book does a young girl find herself in Boston during the Great Molasses Flood? | I Survived the Great Molasses Flood, 1919 | Lauren Tarshis |
 | In what book does a huge storage tank suddenly release a wave of molasses through city streets? | I Survived the Great Molasses Flood, 1919 | Lauren Tarshis |
 | In what book does a child use her knowledge of horses while trying to survive a disaster? | I Survived the Great Molasses Flood, 1919 | Lauren Tarshis |
 | In what book does a massive wave of a sticky substance move faster than people expect? | I Survived the Great Molasses Flood, 1919 | Lauren Tarshis |
@@ -350,7 +350,7 @@
 | In what book does a doctor take an ill child to his own home instead of sending her to the hospital? | The Boxcar Children | Gertrude Chandler Warner |
 | In what book does a grandfather meet his grandchildren without initially telling them who he really is? | The Boxcar Children | Gertrude Chandler Warner |
 | In what book does a boy win a race without realizing that the person giving him the prize is his grandfather? | The Boxcar Children | Gertrude Chandler Warner |
-| In what book does a dog named Watch become important because one of the children removes a thorn from his paw? | The Boxcar Children | Gertrude Chandler Warner |
+| In what book does a stray dog become important because one of the children removes a thorn from his paw? | The Boxcar Children | Gertrude Chandler Warner |
 | In what book does a dog originally belong to another person before becoming part of the children's family? | The Boxcar Children | Gertrude Chandler Warner |
 | In what book does a wealthy grandfather eventually have the children's boxcar moved to his own property? | The Boxcar Children | Gertrude Chandler Warner |
 | In what book does the grandfather have the boxcar restored so the children can continue using it? | The Boxcar Children | Gertrude Chandler Warner |
@@ -364,11 +364,11 @@
 | In what book does four siblings' fear of their grandfather turn out to be based largely on what they had been told about him? | The Boxcar Children | Gertrude Chandler Warner |
 | In what book does a young girl save a runt pig by arguing with her father? | Charlotte's Web | E.B. White |
 | In what book does a spider promise to save a pig from being slaughtered? | Charlotte's Web | E.B. White |
-| In what book does a rat named Templeton retrieve things that another animal needs? | Charlotte's Web | E.B. White |
+| In what book does a rat retrieve things that another animal needs? | Charlotte's Web | E.B. White |
 | In what book does a spider use words in her web to influence people's opinion of a pig? | Charlotte's Web | E.B. White |
 | In what book does a newspaper clipping provide the word needed for the next message in a web? | Charlotte's Web | E.B. White |
 | In what book does a pig receive a buttermilk bath before an important competition? | Charlotte's Web | E.B. White |
-| In what book does a huge pig named Uncle compete against the protagonist at a fair? | Charlotte's Web | E.B. White |
+| In what book does a large pig compete against the protagonist at a fair? | Charlotte's Web | E.B. White |
 | In what book does a rat agree to retrieve an egg sac in exchange for first choice of food? | Charlotte's Web | E.B. White |
 | In what book does the protagonist faint after receiving an award? | Charlotte's Web | E.B. White |
 | In what book does another animal bite the protagonist's tail to wake him after he faints? | Charlotte's Web | E.B. White |
@@ -377,9 +377,9 @@
 | In what book do baby spiders eventually leave home by floating away on strands of silk? | Charlotte's Web | E.B. White |
 | In what book do three young spiders decide to remain behind rather than fly away? | Charlotte's Web | E.B. White |
 | In what book does a girl spend time talking to animals while adults worry about her unusual behavior? | Charlotte's Web | E.B. White |
-| In what book does a girl meet a boy named Henry Fussy at a county fair? | Charlotte's Web | E.B. White |
-| In what book does a character called Lurvy take care of a pig for the Zuckerman family? | Charlotte's Web | E.B. White |
-| In what book does a character called Avery get into trouble while exploring around the barn? | Charlotte's Web | E.B. White |
+| In what book does a girl meet a boy at a county fair? | Charlotte's Web | E.B. White |
+| In what book does a farmhand take care of a pig for the Zuckerman family? | Charlotte's Web | E.B. White |
+| In what book does a child get into trouble while exploring around the barn? | Charlotte's Web | E.B. White |
 | In what book does the word "Humble" become one of the final messages in a spider's web? | Charlotte's Web | E.B. White |
 | In what book does the protagonist return home carrying something that will preserve the memory of a friend who has died? | Charlotte's Web | E.B. White |
 | In what book does a young pitcher have to overcome prejudice against his religion while pursuing a baseball career? | You Never Heard Of Sandy Koufax?! | Jonah Winter |

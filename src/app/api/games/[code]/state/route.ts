@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { toPublicGameState } from '@/lib/game/engine';
-import { getQuestions } from '@/lib/questions';
+import { getQuestions, questionSetForDifficulty } from '@/lib/questions';
 import { GameNotFoundError, updateGame } from '@/lib/store';
 
 /**
@@ -11,10 +11,10 @@ import { GameNotFoundError, updateGame } from '@/lib/store';
  */
 export async function GET(_request: Request, { params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
-  const questions = getQuestions();
   const now = Date.now();
   try {
-    const state = await updateGame(code, questions, now, (s) => s);
+    const state = await updateGame(code, now, (s) => s);
+    const questions = getQuestions(questionSetForDifficulty(state.difficulty));
     return NextResponse.json(toPublicGameState(state, questions, now, process.env.MOCK_AI === 'true'));
   } catch (err) {
     if (err instanceof GameNotFoundError) {

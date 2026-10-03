@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getQuestions, parseQuestionsMarkdown } from './questions';
+import { getQuestions, parseQuestionsMarkdown, questionSetForDifficulty } from './questions';
 
 describe('parseQuestionsMarkdown', () => {
   it('parses a valid table', () => {
@@ -65,5 +65,16 @@ describe('getQuestions', () => {
     expect(() => getQuestions('hard')).not.toThrow();
     const hardQuestions = getQuestions('hard');
     expect(hardQuestions.every((q) => q.question.trim() && q.title.trim() && q.author.trim())).toBe(true);
+  });
+});
+
+describe('questionSetForDifficulty', () => {
+  it('maps hard to the hard set', () => {
+    expect(questionSetForDifficulty('hard')).toBe('hard');
+  });
+
+  it('maps easy and medium to the standard set', () => {
+    expect(questionSetForDifficulty('easy')).toBe('standard');
+    expect(questionSetForDifficulty('medium')).toBe('standard');
   });
 });

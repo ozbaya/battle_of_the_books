@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { judgeAnswer } from '@/lib/ai/judge';
 import { buildTranscribePrompt, transcribeAnswer } from '@/lib/ai/transcribe';
 import { applyJudgment, getCurrentQuestion, toPublicGameState } from '@/lib/game/engine';
-import { getQuestions } from '@/lib/questions';
+import { getQuestions, questionSetForDifficulty } from '@/lib/questions';
 import { GameNotFoundError, updateGame } from '@/lib/store';
 
 export const runtime = 'nodejs';
@@ -28,13 +28,15 @@ interface Judged {
 export async function POST(request: NextRequest, { params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
   const mockAi = process.env.MOCK_AI === 'true';
-  const questions = getQuestions();
 
   try {
     // Advance + persist first, independent of the (here instant, later slow
     // for real audio) judging call — only the final state write goes
     // through CAS, per CLAUDE.md §6.
-    const afterAdvance = await updateGame(code, questions, Date.now(), (s) => s);
+    const afterAdvance = await updateGame(code, Date.now(), (s) => s);
+    // The question bank depends on the game's own difficulty, only known
+    // once the game is loaded — resolve it from the state we just got back.
+    const questions = getQuestions(questionSetForDifficulty(afterAdvance.difficulty));
     if (afterAdvance.phase.name !== 'KIDS_ROUND') {
       return NextResponse.json(toPublicGameState(afterAdvance, questions, Date.now(), mockAi));
     }
@@ -78,7 +80,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       } catch {
         // Don't stall the game on a transcription failure: needs manual review, 0 for now.
         judged = { playerId, transcript: '', titleCorrect: false, authorCorrect: false, recorded: false, needsReview: true };
-        const final = await updateGame(code, questions, Date.now(), (s) => {
+        const final = await updateGame(code, Date.now(), (s) => {
           if (s.phase.name !== 'KIDS_ROUND' || s.currentIndex !== questionIndexAtAnswer) return s;
           return applyJudgment(s, judged.playerId, judged);
         });
@@ -106,7 +108,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       }
     }
 
-    const final = await updateGame(code, questions, Date.now(), (s) => {
+    const final = await updateGame(code, Date.now(), (s) => {
       // The question may have moved on while judging ran; don't apply a
       // stale judgment to the wrong question.
       if (s.phase.name !== 'KIDS_ROUND' || s.currentIndex !== questionIndexAtAnswer) return s;
