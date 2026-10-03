@@ -28,6 +28,14 @@ const CELEBRATION_IMAGES: { src: string; width: number; height: number; alt: str
 ];
 const CELEBRATION_DISPLAY_MS = 3000;
 
+// A sad trumpet sting on a wrong answer — purely for fun, quiz-mode-only.
+// No unlock/gesture gating like the synthesized sounds in lib/sound.ts: by
+// the time this fires, the player has already tapped at least twice (Start
+// the quiz, then ANSWER/Submit), so autoplay restrictions don't apply.
+function playSadTrumpet() {
+  new Audio('/A_sad_trumpet.mp3').play().catch(() => {});
+}
+
 function randomCelebrationImage() {
   return CELEBRATION_IMAGES[Math.floor(Math.random() * CELEBRATION_IMAGES.length)];
 }
@@ -222,6 +230,7 @@ function QuizQuestionView({
     setTimeout(() => {
       if (needsReveal && outcome) {
         setRevealAnswer(outcome.correctAnswer);
+        if (outcome.points === SCORE.WRONG) playSadTrumpet();
         setTimeout(() => setReadyForNext(true), WRONG_ANSWER_REVEAL_MS);
       } else if (correct) {
         setCelebration(randomCelebrationImage());
@@ -290,14 +299,18 @@ function QuizQuestionView({
         </p>
       )}
       {celebration && (
-        <div className="flex justify-center">
+        <div
+          className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center overflow-hidden"
+          style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
+        >
           <Image
             src={celebration.src}
             alt={celebration.alt}
             width={celebration.width}
             height={celebration.height}
             unoptimized
-            className="h-28 w-28 animate-bounce rounded-2xl object-cover shadow-lg sm:h-36 sm:w-36"
+            className="h-56 w-56 rounded-2xl object-cover shadow-xl sm:h-72 sm:w-72"
+            style={{ animation: 'celebration-jump 0.8s ease-in-out infinite' }}
           />
         </div>
       )}
