@@ -9,7 +9,10 @@ export interface ActiveGameSummary {
   phase: string;
 }
 
-const POLL_INTERVAL_MS = 3000;
+// Each poll costs 1 + N Redis reads (N = active games), and nothing here is
+// time-critical — a kid browsing for a game to join can tolerate a few
+// seconds' staleness, so this polls much more gently than in-game state.
+const POLL_INTERVAL_MS = 6000;
 
 /** Powers the home page's list of joinable games; polls gently since it's not latency-sensitive. */
 export function useActiveGames(): { games: ActiveGameSummary[]; loading: boolean } {

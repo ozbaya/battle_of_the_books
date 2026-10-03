@@ -84,6 +84,13 @@ export async function listActiveGames(): Promise<GameState[]> {
  * route, including the read-only /state poll (whose "action" is the identity
  * function) — this is how lazy time-based transitions actually get persisted
  * between client polls (CLAUDE.md §4.1).
+ *
+ * When neither advance() nor the action actually changed anything — the
+ * common case for a /state poll during a quiet stretch, or a press/join/etc.
+ * that got rejected as a no-op — the write is skipped entirely (no version
+ * bump, no Redis command) rather than writing an identical copy back. Every
+ * no-op branch in engine.ts returns its input state by reference unchanged,
+ * so a reference-equality check reliably detects this.
  */
 export async function updateGame(
   code: string,
@@ -107,6 +114,7 @@ export async function updateGameWithStore(
     if (!loaded) throw new GameNotFoundError(code);
     const advanced = advance(loaded, now, questions);
     const acted = fn(advanced, now);
+    if (acted === loaded) return loaded;
     const next: GameState = { ...acted, version: advanced.version + 1 };
     const saved = await store.casSave(code, advanced.version, next);
     if (saved) return next;

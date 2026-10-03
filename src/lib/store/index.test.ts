@@ -32,13 +32,40 @@ function openedGame(code: string): GameState {
 }
 
 describe('updateGameWithStore', () => {
-  it('bumps version by exactly 1 per successful write', async () => {
+  it('bumps version by exactly 1 per successful write that actually changes something', async () => {
     const code = `V-${Math.random()}`;
     await memoryStore.create(code, freshGame(code));
-    const after1 = await updateGameWithStore(memoryStore, code, QUESTIONS, 0, (s) => s);
+    const after1 = await updateGameWithStore(memoryStore, code, QUESTIONS, 0, (s) => applyJoin(s, 'sam', 'Sam'));
     expect(after1.version).toBe(1);
-    const after2 = await updateGameWithStore(memoryStore, code, QUESTIONS, 0, (s) => s);
+    const after2 = await updateGameWithStore(memoryStore, code, QUESTIONS, 0, (s) => applyJoin(s, 'robin', 'Robin'));
     expect(after2.version).toBe(2);
+  });
+
+  it('skips the write entirely — no version bump — when advance() and the action are both no-ops', async () => {
+    const code = `N-${Math.random()}`;
+    await memoryStore.create(code, freshGame(code)); // LOBBY; advance() alone never leaves LOBBY
+    let casSaveCalls = 0;
+    const counting: Store = {
+      ...memoryStore,
+      async casSave(c, expected, next) {
+        casSaveCalls += 1;
+        return memoryStore.casSave(c, expected, next);
+      },
+    };
+    const before = await memoryStore.load(code);
+    const after = await updateGameWithStore(counting, code, QUESTIONS, 0, (s) => s); // identity action, nothing to do
+    expect(after.version).toBe(before!.version);
+    expect(casSaveCalls).toBe(0);
+  });
+
+  it('still writes when only advance() changes something, even for an identity action', async () => {
+    const code = `A-${Math.random()}`;
+    const state = applyStart(freshGame(code), 0); // GET_READY { opensAt: GET_READY_DURATION_MS }
+    await memoryStore.create(code, state);
+    // now is past opensAt, so advance() alone moves GET_READY -> KIDS_ROUND even though the action is identity.
+    const after = await updateGameWithStore(memoryStore, code, QUESTIONS, GET_READY_DURATION_MS, (s) => s);
+    expect(after.version).toBe(1);
+    expect(after.phase.name).toBe('KIDS_ROUND');
   });
 
   it('throws GameNotFoundError for an unknown code', async () => {
@@ -81,7 +108,7 @@ describe('updateGameWithStore', () => {
         return memoryStore.casSave(c, expected, next);
       },
     };
-    const result = await updateGameWithStore(flaky, code, QUESTIONS, 0, (s) => s);
+    const result = await updateGameWithStore(flaky, code, QUESTIONS, 0, (s) => applyJoin(s, 'sam', 'Sam'));
     expect(result.version).toBe(1);
     expect(failuresLeft).toBe(0);
   });
@@ -95,8 +122,8 @@ describe('updateGameWithStore', () => {
         return false;
       },
     };
-    await expect(updateGameWithStore(alwaysFails, code, QUESTIONS, 0, (s) => s)).rejects.toThrow(
-      CasConflictError
-    );
+    await expect(
+      updateGameWithStore(alwaysFails, code, QUESTIONS, 0, (s) => applyJoin(s, 'sam', 'Sam'))
+    ).rejects.toThrow(CasConflictError);
   });
 });

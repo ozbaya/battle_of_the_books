@@ -19,7 +19,7 @@ conflict with a later instruction from the user, follow the user and update this
 | Styling | Tailwind CSS (v4) | v4 style: `@import "tailwindcss";` in `globals.css`, `@tailwindcss/postcss` plugin, no `tailwind.config.js` unless a customization needs it. |
 | Hosting | Vercel | Serverless functions only — **no long-running processes, no WebSockets, no server timers**. |
 | Shared game state | Upstash Redis (via Vercel Marketplace) | `@upstash/redis`. In-memory fallback for local dev (see §9). |
-| Real-time updates | Short polling (every ~500 ms) | Simple and Vercel-friendly. Upgrade path: Ably or Pusher for push events if polling feels laggy. |
+| Real-time updates | Short polling, phase-aware cadence (1 s during active answering phases, 2.5 s during quiet ones like LOBBY/REVEAL) | Simple and Vercel-friendly; the store layer also skips writing back to Redis when a poll finds nothing changed, to keep Redis command volume (and therefore quota/cost) down. Upgrade path: Ably or Pusher for push events if polling feels laggy. |
 | Speech-to-text | OpenAI transcription API, model `whisper-1` | Hosted Whisper. Model name configurable via `OPENAI_TRANSCRIBE_MODEL`. |
 | Answer judging | OpenAI chat/Responses API with structured JSON output | Model configurable via `OPENAI_JUDGE_MODEL` (default to a small, fast model, e.g. `gpt-4o-mini`). |
 | Audio capture | Browser `MediaRecorder` | Requires HTTPS (Vercel provides it; `localhost` is also allowed). Starting point: `reference/audio-recording-reference.js` (see §6). |
@@ -385,7 +385,7 @@ Keep a committed `.env.example`; `.env.local` is git-ignored.
    reveal → next question → game over after `numQuestions`; admin end; override recomputation.
 3. Store layer: memory store, then Redis store with CAS + retry.
 4. API routes (join, state, press, admin actions) with `MOCK_AI=true` answers.
-5. Pages: `/admin`, `/play`, `/screen`, `/scores` with a polling hook `useGameState(code)` (500 ms, pauses when tab hidden).
+5. Pages: `/admin`, `/play`, `/screen`, `/scores` with a polling hook `useGameState(code)` (phase-aware cadence, pauses when tab hidden).
 6. Real audio: port the reference recorder (§6) with the mic off except during a tapped answer, `/answer` route, Whisper transcription + lenient OpenAI evaluation.
 7. Polish: big-screen messages, kid status chips, sounds, QR code, admin override UI, device pass (phone / tablet / laptop, §8).
 8. Deploy to Vercel (add Upstash Redis from the Marketplace, set env vars), then test end-to-end with real devices — at least one iPhone in landscape, one tablet, and one laptop — with several kids answering the same question.
