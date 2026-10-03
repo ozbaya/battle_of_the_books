@@ -163,6 +163,7 @@ export default function PracticePage() {
   return (
     <PracticeQuestionView
       key={position}
+      questionIndex={questionIndex}
       questionNumber={position + 1}
       totalQuestions={order.length}
       questionText={questionText}
@@ -177,6 +178,7 @@ export default function PracticePage() {
 }
 
 function PracticeQuestionView({
+  questionIndex,
   questionNumber,
   totalQuestions,
   questionText,
@@ -187,6 +189,7 @@ function PracticeQuestionView({
   onFinish,
   isLast,
 }: {
+  questionIndex: number;
   questionNumber: number;
   totalQuestions: number;
   questionText: string;
@@ -198,8 +201,22 @@ function PracticeQuestionView({
   isLast: boolean;
 }) {
   const [tapped, setTapped] = useState(false);
+  const [gaveUp, setGaveUp] = useState(false);
   const [readyForNext, setReadyForNext] = useState(false);
   const [revealAnswer, setRevealAnswer] = useState<{ title: string; author: string } | null>(null);
+
+  // "Show me the answer": a deliberate give-up, not an attempt — no score,
+  // no transcribe/judge call, just a lookup. Disables the answer button
+  // immediately so the player can't then try to answer after seeing it.
+  async function handleShowAnswer() {
+    setGaveUp(true);
+    setReadyForNext(true);
+    const res = await fetch(`/api/practice/answer-key?index=${questionIndex}`);
+    const body = await res.json().catch(() => null);
+    if (body?.correctTitle) {
+      setRevealAnswer({ title: body.correctTitle, author: body.correctAuthor });
+    }
+  }
 
   // Mirrors AnswerReveal's own ANSWER_REVEAL_DELAY_MS so this fires at the
   // same moment the child component's own verdict (✅/❌) appears. When the
@@ -221,7 +238,7 @@ function PracticeQuestionView({
   // Space/Enter presses on mouse devices, same as /play. AnswerButton
   // auto-focuses itself, so (as there) only text-entry targets are excluded.
   useEffect(() => {
-    if (tapped) return;
+    if (tapped || gaveUp) return;
     function onKeyDown(e: KeyboardEvent) {
       if (e.repeat) return;
       if (e.code !== 'Space' && e.code !== 'Enter') return;
@@ -232,7 +249,7 @@ function PracticeQuestionView({
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [tapped]);
+  }, [tapped, gaveUp]);
 
   async function handleMockSubmit(text: string) {
     const outcome = await onSubmitMock(text);
@@ -262,7 +279,9 @@ function PracticeQuestionView({
       </div>
       <p className="text-center text-[clamp(1.1rem,3.5vw,1.6rem)] font-bold leading-tight">{questionText}</p>
       <div className="flex min-h-0 flex-1 items-stretch justify-center">
-        {!tapped ? (
+        {gaveUp ? (
+          <AnswerButton status="locked" lockedReason="Here's the answer!" onPress={() => {}} />
+        ) : !tapped ? (
           <AnswerButton status="ready" onPress={() => setTapped(true)} />
         ) : mockAi ? (
           <MockAnswerForm onSubmit={handleMockSubmit} />
@@ -275,19 +294,27 @@ function PracticeQuestionView({
           The answer was <span className="underline">{revealAnswer.title}</span> by {revealAnswer.author}
         </p>
       )}
-      <div className="flex justify-center">
+      <div className="flex justify-center gap-3">
         {readyForNext && (
           <button onClick={onNext} className="rounded-xl bg-sky-500 px-6 py-3 text-lg font-bold text-white">
             {isLast ? 'See my results →' : 'Next question →'}
           </button>
         )}
-        {!tapped && (
-          <button
-            onClick={onNext}
-            className="rounded-xl border border-neutral-300 px-6 py-3 text-lg font-bold text-neutral-600 hover:bg-black/5 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-white/5"
-          >
-            {isLast ? 'Skip to results →' : 'Skip this question →'}
-          </button>
+        {!tapped && !gaveUp && (
+          <>
+            <button
+              onClick={onNext}
+              className="rounded-xl border border-neutral-300 px-6 py-3 text-lg font-bold text-neutral-600 hover:bg-black/5 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-white/5"
+            >
+              {isLast ? 'Skip to results →' : 'Skip this question →'}
+            </button>
+            <button
+              onClick={handleShowAnswer}
+              className="rounded-xl border border-neutral-300 px-6 py-3 text-lg font-bold text-neutral-600 hover:bg-black/5 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-white/5"
+            >
+              Show me the answer
+            </button>
+          </>
         )}
       </div>
     </main>
