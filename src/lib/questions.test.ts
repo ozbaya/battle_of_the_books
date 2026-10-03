@@ -57,4 +57,13 @@ describe('getQuestions', () => {
     expect(questions.length).toBeGreaterThan(0);
     expect(questions.every((q) => q.question.trim() && q.title.trim() && q.author.trim())).toBe(true);
   });
+
+  // questions/hard.md is an admin-authored, optional "Hard" set for
+  // Practice/Quiz — ships as an empty placeholder until the admin adds
+  // rows. Must parse without throwing either way.
+  it('loads questions/hard.md (currently an empty placeholder) without throwing', () => {
+    expect(() => getQuestions('hard')).not.toThrow();
+    const hardQuestions = getQuestions('hard');
+    expect(hardQuestions.every((q) => q.question.trim() && q.title.trim() && q.author.trim())).toBe(true);
+  });
 });

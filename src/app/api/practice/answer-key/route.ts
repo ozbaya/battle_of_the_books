@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getQuestions } from '@/lib/questions';
+import { getQuestions, type QuestionSet } from '@/lib/questions';
 
 /**
  * Public, stateless lookup for the "Show me the answer" give-up button in
@@ -10,7 +10,8 @@ import { getQuestions } from '@/lib/questions';
 export async function GET(request: NextRequest) {
   const indexRaw = request.nextUrl.searchParams.get('index');
   const index = indexRaw === null ? NaN : Number(indexRaw);
-  const questions = getQuestions();
+  const set: QuestionSet = request.nextUrl.searchParams.get('set') === 'hard' ? 'hard' : 'standard';
+  const questions = getQuestions(set);
   if (!Number.isInteger(index) || index < 0 || index >= questions.length) {
     return NextResponse.json({ error: 'Invalid index' }, { status: 400 });
   }

@@ -9,6 +9,7 @@ import { MockAnswerForm } from '@/components/MockAnswerForm';
 import { RealRecordingPanel } from '@/components/RealRecordingPanel';
 import { useClientValue } from '@/lib/hooks/useClientValue';
 import { SCORE } from '@/lib/game/config';
+import type { QuestionSet } from '@/lib/questions';
 import { SOLO_NAME_KEY } from '@/lib/soloName';
 
 const ROUND_SIZE = 10;
@@ -39,6 +40,9 @@ function pickRound(pool: QuestionMeta[]): number[] {
 
 export default function PracticePage() {
   const [questions, setQuestions] = useState<QuestionMeta[] | null>(null);
+  const [hardQuestions, setHardQuestions] = useState<QuestionMeta[]>([]);
+  const [hardAvailable, setHardAvailable] = useState(false);
+  const [difficulty, setDifficulty] = useState<QuestionSet>('standard');
   const [mockAi, setMockAi] = useState(true);
   const [sessionPhase, setSessionPhase] = useState<SessionPhase>('start');
   const [order, setOrder] = useState<number[]>([]);
@@ -46,6 +50,7 @@ export default function PracticePage() {
   const [results, setResults] = useState<RoundResult[]>([]);
   const [starting, setStarting] = useState(false);
   const mic = useMicCheck();
+  const activePool = difficulty === 'hard' ? hardQuestions : questions;
   const storedName = useClientValue(() => localStorage.getItem(SOLO_NAME_KEY) ?? '', '');
   // null = "untouched this session", so the field shows the hydrated stored
   // value without needing an effect to copy it into local state.
@@ -72,16 +77,21 @@ export default function PracticePage() {
       .then((body) => {
         setQuestions(body.questions ?? []);
         setMockAi(Boolean(body.mockAi));
+        setHardAvailable(Boolean(body.hardAvailable));
+        if (!body.hardAvailable) return;
+        return fetch('/api/practice/questions?set=hard')
+          .then((res) => res.json())
+          .then((hardBody) => setHardQuestions(hardBody.questions ?? []));
       })
       .catch(() => setQuestions([]));
   }, []);
 
   async function startRound() {
-    if (!questions || questions.length === 0) return;
+    if (!activePool || activePool.length === 0) return;
     setStarting(true);
     try {
       if (!mockAi) await mic.run();
-      setOrder(pickRound(questions));
+      setOrder(pickRound(activePool));
       setPosition(0);
       setResults([]);
       setSessionPhase('playing');
@@ -127,7 +137,7 @@ export default function PracticePage() {
     const res = await fetch('/api/practice/answer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ index: questionIndex, text }),
+      body: JSON.stringify({ index: questionIndex, text, set: difficulty }),
     });
     const body = await res.json().catch(() => null);
     if (!body) return null;
@@ -144,6 +154,7 @@ export default function PracticePage() {
   async function submitReal(questionIndex: number, blob: Blob, filename: string): Promise<PracticeAnswerResult | null> {
     const form = new FormData();
     form.append('index', String(questionIndex));
+    form.append('set', difficulty);
     form.append('audio', blob, filename);
     const res = await fetch('/api/practice/answer', { method: 'POST', body: form });
     const body = await res.json().catch(() => null);
@@ -167,8 +178,32 @@ export default function PracticePage() {
       <Centered>
         <h1 className="text-3xl font-black">🎯 Practice Mode</h1>
         <p className="max-w-sm opacity-70">
-          Answer {Math.min(ROUND_SIZE, questions.length)} questions on your own — no team, no robots, just you.
+          Answer {Math.min(ROUND_SIZE, activePool?.length ?? 0)} questions on your own — no team, no robots, just you.
         </p>
+        {hardAvailable && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => setDifficulty('standard')}
+              className={`rounded-lg px-4 py-2 font-bold ${
+                difficulty === 'standard'
+                  ? 'bg-sky-500 text-white'
+                  : 'border border-neutral-300 text-neutral-600 dark:border-neutral-700 dark:text-neutral-300'
+              }`}
+            >
+              Normal
+            </button>
+            <button
+              onClick={() => setDifficulty('hard')}
+              className={`rounded-lg px-4 py-2 font-bold ${
+                difficulty === 'hard'
+                  ? 'bg-rose-500 text-white'
+                  : 'border border-neutral-300 text-neutral-600 dark:border-neutral-700 dark:text-neutral-300'
+              }`}
+            >
+              Hard 🔥
+            </button>
+          </div>
+        )}
         <input
           value={name}
           onChange={(e) => updateName(e.target.value)}
@@ -177,7 +212,7 @@ export default function PracticePage() {
         />
         <button
           onClick={startRound}
-          disabled={starting || questions.length === 0}
+          disabled={starting || !activePool || activePool.length === 0}
           className="rounded-xl bg-sky-500 px-6 py-3 text-lg font-bold text-white disabled:opacity-50"
         >
           {starting ? 'Getting ready…' : 'Start practicing'}
@@ -201,12 +236,13 @@ export default function PracticePage() {
   }
 
   const questionIndex = order[position];
-  const questionText = questions.find((q) => q.index === questionIndex)?.question ?? '';
+  const questionText = activePool?.find((q) => q.index === questionIndex)?.question ?? '';
 
   return (
     <PracticeQuestionView
       key={position}
       questionIndex={questionIndex}
+      difficulty={difficulty}
       questionNumber={position + 1}
       totalQuestions={order.length}
       questionText={questionText}
@@ -222,6 +258,7 @@ export default function PracticePage() {
 
 function PracticeQuestionView({
   questionIndex,
+  difficulty,
   questionNumber,
   totalQuestions,
   questionText,
@@ -233,6 +270,7 @@ function PracticeQuestionView({
   isLast,
 }: {
   questionIndex: number;
+  difficulty: QuestionSet;
   questionNumber: number;
   totalQuestions: number;
   questionText: string;
@@ -254,7 +292,7 @@ function PracticeQuestionView({
   async function handleShowAnswer() {
     setGaveUp(true);
     setReadyForNext(true);
-    const res = await fetch(`/api/practice/answer-key?index=${questionIndex}`);
+    const res = await fetch(`/api/practice/answer-key?index=${questionIndex}&set=${difficulty}`);
     const body = await res.json().catch(() => null);
     if (body?.correctTitle) {
       setRevealAnswer({ title: body.correctTitle, author: body.correctAuthor });

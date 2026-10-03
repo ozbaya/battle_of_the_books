@@ -3,12 +3,17 @@ import { z } from 'zod';
 import { judgeAnswer } from '@/lib/ai/judge';
 import { buildTranscribePrompt, transcribeAnswer } from '@/lib/ai/transcribe';
 import { scoreAnswer } from '@/lib/game/scoring';
-import { getQuestions } from '@/lib/questions';
+import type { Question } from '@/lib/game/types';
+import { getQuestions, type QuestionSet } from '@/lib/questions';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
 
-const mockBodySchema = z.object({ index: z.number().int().min(0), text: z.string() });
+const mockBodySchema = z.object({
+  index: z.number().int().min(0),
+  text: z.string(),
+  set: z.enum(['standard', 'hard']).optional(),
+});
 
 interface AnswerResponse {
   transcript: string;
@@ -22,13 +27,13 @@ interface AnswerResponse {
  * Same transcribe -> judge -> score pipeline as /api/games/[code]/answer,
  * minus everything GameState-related: no store, no CAS, no Redis. Fully
  * stateless and public — a practice session needs no shared/multiplayer
- * state at all.
+ * state at all. `set` picks which question bank `index` resolves against
+ * (standard questions.md, or the optional harder hard.md).
  */
 export async function POST(request: NextRequest) {
   const mockAi = process.env.MOCK_AI === 'true';
-  const questions = getQuestions();
 
-  let index: number;
+  let question: Question;
   let transcript: string;
   let recorded: boolean;
   let titleCorrect = false;
@@ -37,11 +42,12 @@ export async function POST(request: NextRequest) {
   if (mockAi) {
     const json = await request.json().catch(() => null);
     const parsed = mockBodySchema.safeParse(json);
+    const set: QuestionSet = parsed.success && parsed.data.set === 'hard' ? 'hard' : 'standard';
+    const questions = getQuestions(set);
     if (!parsed.success || parsed.data.index >= questions.length) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
     }
-    index = parsed.data.index;
-    const question = questions[index];
+    question = questions[parsed.data.index];
     const result = await judgeAnswer({
       question: question.question,
       title: question.title,
@@ -55,13 +61,15 @@ export async function POST(request: NextRequest) {
   } else {
     const form = await request.formData().catch(() => null);
     const indexRaw = form?.get('index');
+    const setRaw = form?.get('set');
     const audio = form?.get('audio');
+    const set: QuestionSet = setRaw === 'hard' ? 'hard' : 'standard';
+    const questions = getQuestions(set);
     const parsedIndex = typeof indexRaw === 'string' ? Number(indexRaw) : NaN;
     if (!Number.isInteger(parsedIndex) || parsedIndex < 0 || parsedIndex >= questions.length || !(audio instanceof Blob)) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
     }
-    index = parsedIndex;
-    const question = questions[index];
+    question = questions[parsedIndex];
     const filename = audio instanceof File && audio.name ? audio.name : 'answer.webm';
 
     try {
@@ -90,7 +98,6 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const question = questions[index];
   const points = scoreAnswer({ titleCorrect, authorCorrect, recorded });
   return NextResponse.json({
     transcript,

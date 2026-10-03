@@ -10,6 +10,7 @@ import { MockAnswerForm } from '@/components/MockAnswerForm';
 import { RealRecordingPanel } from '@/components/RealRecordingPanel';
 import { useClientValue } from '@/lib/hooks/useClientValue';
 import { SCORE } from '@/lib/game/config';
+import type { QuestionSet } from '@/lib/questions';
 import { SOLO_NAME_KEY } from '@/lib/soloName';
 
 // Preview feature: a title<->author flashcard quiz, practice-mode-only (no
@@ -121,6 +122,9 @@ function pickRound(pool: QuizPromptMeta[]): number[] {
 
 export default function QuizPage() {
   const [prompts, setPrompts] = useState<QuizPromptMeta[] | null>(null);
+  const [hardPrompts, setHardPrompts] = useState<QuizPromptMeta[]>([]);
+  const [hardAvailable, setHardAvailable] = useState(false);
+  const [difficulty, setDifficulty] = useState<QuestionSet>('standard');
   const [mockAi, setMockAi] = useState(true);
   const [sessionPhase, setSessionPhase] = useState<SessionPhase>('start');
   const [order, setOrder] = useState<number[]>([]);
@@ -129,6 +133,7 @@ export default function QuizPage() {
   const [starting, setStarting] = useState(false);
   const mic = useMicCheck();
   const [sounds, setSounds] = useState<SoundBoard | null>(null);
+  const activePool = difficulty === 'hard' ? hardPrompts : prompts;
   const storedName = useClientValue(() => localStorage.getItem(SOLO_NAME_KEY) ?? '', '');
   // null = "untouched this session", so the field shows the hydrated stored
   // value without needing an effect to copy it into local state.
@@ -150,19 +155,24 @@ export default function QuizPage() {
       .then((body) => {
         setPrompts(body.questions ?? []);
         setMockAi(Boolean(body.mockAi));
+        setHardAvailable(Boolean(body.hardAvailable));
+        if (!body.hardAvailable) return;
+        return fetch('/api/quiz/questions?set=hard')
+          .then((res) => res.json())
+          .then((hardBody) => setHardPrompts(hardBody.questions ?? []));
       })
       .catch(() => setPrompts([]));
   }, []);
 
   async function startRound() {
-    if (!prompts || prompts.length === 0) return;
+    if (!activePool || activePool.length === 0) return;
     // Prime both sound effects synchronously, inside this tap, before any
     // `await` — see primeSoundBoard()'s comment for why.
     if (!sounds) setSounds(primeSoundBoard());
     setStarting(true);
     try {
       if (!mockAi) await mic.run();
-      setOrder(pickRound(prompts));
+      setOrder(pickRound(activePool));
       setPosition(0);
       setResults([]);
       setSessionPhase('playing');
@@ -207,7 +217,7 @@ export default function QuizPage() {
     const res = await fetch('/api/quiz/answer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ index: questionIndex, text }),
+      body: JSON.stringify({ index: questionIndex, text, set: difficulty }),
     });
     const body = await res.json().catch(() => null);
     if (!body) return null;
@@ -218,6 +228,7 @@ export default function QuizPage() {
   async function submitReal(questionIndex: number, blob: Blob, filename: string): Promise<QuizAnswerResult | null> {
     const form = new FormData();
     form.append('index', String(questionIndex));
+    form.append('set', difficulty);
     form.append('audio', blob, filename);
     const res = await fetch('/api/quiz/answer', { method: 'POST', body: form });
     const body = await res.json().catch(() => null);
@@ -235,8 +246,32 @@ export default function QuizPage() {
       <Centered>
         <h1 className="text-3xl font-black">🧠 Title &amp; Author Quiz</h1>
         <p className="max-w-sm opacity-70">
-          {Math.min(ROUND_SIZE, prompts.length)} quick flashcards — name the author, or name the book — no team, no robots, just you.
+          {Math.min(ROUND_SIZE, activePool?.length ?? 0)} quick flashcards — name the author, or name the book — no team, no robots, just you.
         </p>
+        {hardAvailable && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => setDifficulty('standard')}
+              className={`rounded-lg px-4 py-2 font-bold ${
+                difficulty === 'standard'
+                  ? 'bg-violet-500 text-white'
+                  : 'border border-neutral-300 text-neutral-600 dark:border-neutral-700 dark:text-neutral-300'
+              }`}
+            >
+              Normal
+            </button>
+            <button
+              onClick={() => setDifficulty('hard')}
+              className={`rounded-lg px-4 py-2 font-bold ${
+                difficulty === 'hard'
+                  ? 'bg-rose-500 text-white'
+                  : 'border border-neutral-300 text-neutral-600 dark:border-neutral-700 dark:text-neutral-300'
+              }`}
+            >
+              Hard 🔥
+            </button>
+          </div>
+        )}
         <input
           value={name}
           onChange={(e) => updateName(e.target.value)}
@@ -245,7 +280,7 @@ export default function QuizPage() {
         />
         <button
           onClick={startRound}
-          disabled={starting || prompts.length === 0}
+          disabled={starting || !activePool || activePool.length === 0}
           className="rounded-xl bg-violet-500 px-6 py-3 text-lg font-bold text-white disabled:opacity-50"
         >
           {starting ? 'Getting ready…' : 'Start the quiz'}
@@ -269,12 +304,13 @@ export default function QuizPage() {
   }
 
   const questionIndex = order[position];
-  const promptText = prompts.find((q) => q.index === questionIndex)?.prompt ?? '';
+  const promptText = activePool?.find((q) => q.index === questionIndex)?.prompt ?? '';
 
   return (
     <QuizQuestionView
       key={position}
       questionIndex={questionIndex}
+      difficulty={difficulty}
       questionNumber={position + 1}
       totalQuestions={order.length}
       promptText={promptText}
@@ -291,6 +327,7 @@ export default function QuizPage() {
 
 function QuizQuestionView({
   questionIndex,
+  difficulty,
   questionNumber,
   totalQuestions,
   promptText,
@@ -303,6 +340,7 @@ function QuizQuestionView({
   isLast,
 }: {
   questionIndex: number;
+  difficulty: QuestionSet;
   questionNumber: number;
   totalQuestions: number;
   promptText: string;
@@ -324,7 +362,7 @@ function QuizQuestionView({
   async function handleShowAnswer() {
     setGaveUp(true);
     setReadyForNext(true);
-    const res = await fetch(`/api/quiz/answer-key?index=${questionIndex}`);
+    const res = await fetch(`/api/quiz/answer-key?index=${questionIndex}&set=${difficulty}`);
     const body = await res.json().catch(() => null);
     if (body?.correctAnswer) {
       setRevealAnswer(body.correctAnswer);

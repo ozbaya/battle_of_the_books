@@ -1,4 +1,4 @@
-import { getQuestions } from './questions';
+import { getQuestions, type QuestionSet } from './questions';
 
 export type QuizKind = 'title' | 'author';
 
@@ -10,10 +10,10 @@ export interface QuizBankEntry {
   author: string;
 }
 
-function uniquePairs(): { title: string; author: string }[] {
+function uniquePairs(set: QuestionSet): { title: string; author: string }[] {
   const seen = new Set<string>();
   const pairs: { title: string; author: string }[] = [];
-  for (const q of getQuestions()) {
+  for (const q of getQuestions(set)) {
     const key = `${q.title}|${q.author}`;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -32,9 +32,9 @@ function uniquePairs(): { title: string; author: string }[] {
  * no-Redis pattern /api/practice uses (round selection/shuffling happens
  * client-side, same as practice mode).
  */
-export function getQuizBank(): QuizBankEntry[] {
+export function getQuizBank(set: QuestionSet = 'standard'): QuizBankEntry[] {
   const entries: QuizBankEntry[] = [];
-  uniquePairs().forEach(({ title, author }, i) => {
+  uniquePairs(set).forEach(({ title, author }, i) => {
     entries.push({ index: i * 2, kind: 'author', prompt: `Who is the author of "${title}"?`, title, author });
     entries.push({ index: i * 2 + 1, kind: 'title', prompt: `What is the title of the book written by ${author}?`, title, author });
   });

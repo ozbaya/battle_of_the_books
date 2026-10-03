@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   // pattern statically, which can silently leave it out of the deployed
   // serverless function bundle on Vercel. Force it in explicitly.
   outputFileTracingIncludes: {
-    "/*": ["./questions/questions.md"],
+    "/*": ["./questions/questions.md", "./questions/hard.md"],
   },
 };
 

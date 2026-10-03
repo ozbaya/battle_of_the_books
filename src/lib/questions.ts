@@ -74,8 +74,16 @@ export function parseQuestionsMarkdown(content: string): Question[] {
   return questions;
 }
 
-export function getQuestions(): Question[] {
-  const filePath = path.join(process.cwd(), 'questions', 'questions.md');
+/** 'hard' is an admin-authored, optional second question file (questions/hard.md) for a tougher Practice/Quiz round. Empty until filled in. */
+export type QuestionSet = 'standard' | 'hard';
+
+const QUESTION_FILES: Record<QuestionSet, string> = {
+  standard: 'questions.md',
+  hard: 'hard.md',
+};
+
+export function getQuestions(set: QuestionSet = 'standard'): Question[] {
+  const filePath = path.join(process.cwd(), 'questions', QUESTION_FILES[set]);
   const content = fs.readFileSync(filePath, 'utf8');
   return parseQuestionsMarkdown(content);
 }
