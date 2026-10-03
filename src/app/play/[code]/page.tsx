@@ -1,7 +1,8 @@
 'use client';
 
-import { use, useCallback, useEffect, useState } from 'react';
+import { use, useCallback, useEffect, useRef, useState } from 'react';
 import { AnswerButton, type AnswerButtonStatus } from '@/components/AnswerButton';
+import { ANSWER_REVEAL_DELAY_MS, AnswerReveal, type AnswerOutcome, type RevealPhase } from '@/components/AnswerReveal';
 import { Countdown } from '@/components/Countdown';
 import { MicLevelMeter, useMicCheck } from '@/components/MicCheck';
 import { RealRecordingPanel } from '@/components/RealRecordingPanel';
@@ -17,10 +18,16 @@ function playerIdKey(code: string): string {
 interface MyStatus {
   status: AnswerButtonStatus;
   lockedReason?: string;
-  points?: number;
   showAnswerInput: boolean;
 }
 
+/**
+ * Once a kid has pressed (or a press is optimistically in flight), the
+ * input component owns the rest of this question's UI itself — recording
+ * or typing, then "Checking…", then "You answered: …", then the verdict —
+ * so AnswerButton only ever needs to represent the pre-press ready/locked
+ * states.
+ */
 function computeMyStatus(state: PublicGameState, playerId: string, now: number, optimisticPending: boolean): MyStatus {
   const { phase } = state;
 
@@ -32,20 +39,8 @@ function computeMyStatus(state: PublicGameState, playerId: string, now: number, 
     return { status: 'locked', lockedReason: 'Wait for the next question…', showAnswerInput: false };
   }
 
-  const mine = phase.answers[playerId];
-  if (mine) {
-    if (mine.status === 'done') {
-      const points = mine.points ?? 0;
-      if (!mine.recorded) return { status: 'noAnswer', points, showAnswerInput: false };
-      if (points >= 2) return { status: 'correct', points, showAnswerInput: false };
-      if (points > 0) return { status: 'titleOnly', points, showAnswerInput: false };
-      return { status: 'wrong', points, showAnswerInput: false };
-    }
-    return { status: 'checking', showAnswerInput: true };
-  }
-
-  if (optimisticPending) {
-    return { status: 'checking', showAnswerInput: true };
+  if (phase.answers[playerId] || optimisticPending) {
+    return { status: 'locked', showAnswerInput: true };
   }
 
   const canPress = !phase.firstRespondent || (phase.buttonsCloseAt !== undefined && now < phase.buttonsCloseAt);
@@ -186,19 +181,31 @@ function PlayingView({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [state, playerId, clockOffset, pending, press]);
 
-  async function submitMockAnswer(text: string) {
-    await fetch(`/api/games/${code}/answer`, {
+  function extractOutcome(body: PublicGameState | null, questionIndex: number): AnswerOutcome | null {
+    const entry = body?.history.find((r) => r.by === playerId && r.questionIndex === questionIndex);
+    if (!entry) return null;
+    return { transcript: entry.transcript, points: entry.points, recorded: entry.recorded };
+  }
+
+  async function submitMockAnswer(text: string): Promise<AnswerOutcome | null> {
+    const questionIndex = state.currentIndex;
+    const res = await fetch(`/api/games/${code}/answer`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ playerId, text }),
     });
+    const body = await res.json().catch(() => null);
+    return extractOutcome(body, questionIndex);
   }
 
-  async function submitRealAnswer(blob: Blob, filename: string) {
+  async function submitRealAnswer(blob: Blob, filename: string): Promise<AnswerOutcome | null> {
+    const questionIndex = state.currentIndex;
     const form = new FormData();
     form.append('playerId', playerId);
     form.append('audio', blob, filename);
-    await fetch(`/api/games/${code}/answer`, { method: 'POST', body: form });
+    const res = await fetch(`/api/games/${code}/answer`, { method: 'POST', body: form });
+    const body = await res.json().catch(() => null);
+    return extractOutcome(body, questionIndex);
   }
 
   if (state.phase.name === 'GAME_OVER') {
@@ -277,7 +284,7 @@ function PlayingView({
             <RealRecordingPanel key={state.currentIndex} onUpload={submitRealAnswer} />
           )
         ) : (
-          <AnswerButton status={my.status} lockedReason={my.lockedReason} points={my.points} onPress={press} />
+          <AnswerButton status={my.status} lockedReason={my.lockedReason} onPress={press} />
         )}
       </div>
       <div className="flex flex-[0.9] flex-col justify-between gap-2 short:gap-1">
@@ -295,20 +302,42 @@ function PlayingView({
   );
 }
 
-/** MOCK_AI stand-in for the real recorder (Milestone 6). Keyed by question
- * index from the parent so a new question remounts it with fresh state. */
-function MockAnswerForm({ onSubmit }: { onSubmit: (text: string) => Promise<void> }) {
+/**
+ * MOCK_AI stand-in for the real recorder (Milestone 6). Keyed by question
+ * index from the parent so a new question remounts it with fresh state.
+ * Owns the same "Checking… -> You answered: … -> verdict" reveal as
+ * RealRecordingPanel, via the shared AnswerReveal component.
+ */
+function MockAnswerForm({ onSubmit }: { onSubmit: (text: string) => Promise<AnswerOutcome | null> }) {
   const [text, setText] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [phase, setPhase] = useState<'input' | RevealPhase>('input');
+  const [outcome, setOutcome] = useState<AnswerOutcome | null>(null);
+  const unmountedRef = useRef(false);
+  useEffect(() => {
+    // Reset on every setup: React Strict Mode's dev-only double effect
+    // invoke runs setup -> cleanup -> setup again on the same instance, and
+    // without this the first cleanup's unmountedRef.current = true would
+    // wrongly stick forever (see the identical fix in RealRecordingPanel).
+    unmountedRef.current = false;
+    return () => {
+      unmountedRef.current = true;
+    };
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitting(true);
-    try {
-      await onSubmit(text);
-    } finally {
-      setSubmitting(false);
-    }
+    setPhase('checking');
+    const result = await onSubmit(text);
+    if (unmountedRef.current) return;
+    setOutcome(result ?? { transcript: text, points: 0, recorded: false });
+    setPhase('transcript');
+    setTimeout(() => {
+      if (!unmountedRef.current) setPhase('result');
+    }, ANSWER_REVEAL_DELAY_MS);
+  }
+
+  if (phase !== 'input') {
+    return <AnswerReveal phase={phase} outcome={outcome} />;
   }
 
   return (
@@ -321,8 +350,8 @@ function MockAnswerForm({ onSubmit }: { onSubmit: (text: string) => Promise<void
         placeholder="Book title and author…"
         className="rounded-lg border border-neutral-300 px-3 py-2 text-lg dark:border-neutral-700 dark:bg-neutral-900"
       />
-      <button type="submit" disabled={submitting} className="rounded-lg bg-sky-500 px-4 py-2 font-bold text-white disabled:opacity-50">
-        {submitting ? 'Checking…' : 'Submit answer'}
+      <button type="submit" className="rounded-lg bg-sky-500 px-4 py-2 font-bold text-white">
+        Submit answer
       </button>
     </form>
   );

@@ -1,26 +1,40 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { ANSWER_REVEAL_DELAY_MS, AnswerReveal, type AnswerOutcome, type RevealPhase } from '@/components/AnswerReveal';
 import { AnswerRecorder } from '@/lib/audio/recorder';
 import { RECORDING_DURATION_MS } from '@/lib/game/config';
 
-type Phase = 'starting' | 'recording' | 'uploading' | 'error';
+type Phase = 'starting' | 'recording' | RevealPhase | 'error';
 
 /**
  * Real-audio counterpart to the MOCK_AI text box: starts recording the
  * instant it mounts (the press that revealed it was itself the user
- * gesture), auto-stops at 5s or on tap, and uploads. Cancels the in-flight
- * recording on unmount (e.g. the question moved on) so the mic never stays
- * open longer than it should.
+ * gesture), auto-stops at 5s or on tap, uploads, then — per the "show the
+ * transcript, then the verdict" flow — holds on the transcript for a beat
+ * before revealing whether it was right. Cancels the in-flight recording on
+ * unmount (e.g. the question moved on) so the mic never stays open longer
+ * than it should.
  */
-export function RealRecordingPanel({ onUpload }: { onUpload: (blob: Blob, filename: string) => Promise<void> }) {
+export function RealRecordingPanel({
+  onUpload,
+}: {
+  onUpload: (blob: Blob, filename: string) => Promise<AnswerOutcome | null>;
+}) {
   const recorderRef = useRef<AnswerRecorder | null>(null);
   const startedAtRef = useRef<number | null>(null);
+  const unmountedRef = useRef(false);
   const [phase, setPhase] = useState<Phase>('starting');
   const [remainingMs, setRemainingMs] = useState(RECORDING_DURATION_MS);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [outcome, setOutcome] = useState<AnswerOutcome | null>(null);
 
   useEffect(() => {
+    // Reset on every setup, not just once: React Strict Mode's dev-only
+    // double effect invoke runs setup -> cleanup -> setup again on the same
+    // instance, and without this the cleanup's unmountedRef.current = true
+    // would wrongly stick forever, silently dropping every future update.
+    unmountedRef.current = false;
     const recorder = new AnswerRecorder();
     recorderRef.current = recorder;
     let cancelled = false;
@@ -47,15 +61,29 @@ export function RealRecordingPanel({ onUpload }: { onUpload: (blob: Blob, filena
 
     return () => {
       cancelled = true;
+      unmountedRef.current = true;
       recorder.cancel();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- upload is stable for the lifetime of one answer (see its own definition)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- upload/onUpload are stable for the lifetime of one answer
   }, []);
 
   async function upload(result: { blob: Blob; filename: string } | null) {
-    setPhase('uploading');
-    if (!result) return; // nothing captured; the server's own deadline expiry scores this as 0
-    await onUpload(result.blob, result.filename);
+    setPhase('checking');
+    let result2: AnswerOutcome | null = null;
+    try {
+      result2 = result ? await onUpload(result.blob, result.filename) : null;
+    } catch (err) {
+      if (unmountedRef.current) return;
+      setErrorMessage(err instanceof Error ? err.message : 'Could not submit your answer. Please tell an adult.');
+      setPhase('error');
+      return;
+    }
+    if (unmountedRef.current) return;
+    setOutcome(result2 ?? { transcript: '', points: 0, recorded: false });
+    setPhase('transcript');
+    setTimeout(() => {
+      if (!unmountedRef.current) setPhase('result');
+    }, ANSWER_REVEAL_DELAY_MS);
   }
 
   useEffect(() => {
@@ -83,12 +111,8 @@ export function RealRecordingPanel({ onUpload }: { onUpload: (blob: Blob, filena
     );
   }
 
-  if (phase === 'uploading') {
-    return (
-      <div className="flex h-full w-full items-center justify-center rounded-[2rem] bg-sky-400 text-white">
-        <span className="text-[clamp(1.25rem,4vw,2rem)] font-bold">Checking…</span>
-      </div>
-    );
+  if (phase === 'checking' || phase === 'transcript' || phase === 'result') {
+    return <AnswerReveal phase={phase} outcome={outcome} />;
   }
 
   const fraction = phase === 'recording' ? remainingMs / RECORDING_DURATION_MS : 1;

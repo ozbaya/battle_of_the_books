@@ -49,10 +49,12 @@ describe('parseQuestionsMarkdown', () => {
 });
 
 describe('getQuestions', () => {
-  it('loads the seeded questions/questions.md with well-known books', () => {
+  // Deliberately content-agnostic: questions/questions.md is edited by the
+  // admin going forward, so this only checks structural validity, not any
+  // particular seeded book.
+  it('loads questions/questions.md with well-formed rows', () => {
     const questions = getQuestions();
-    expect(questions.length).toBeGreaterThanOrEqual(10);
-    expect(questions.every((q) => q.question && q.title && q.author)).toBe(true);
-    expect(questions.some((q) => q.title === 'Holes')).toBe(true);
+    expect(questions.length).toBeGreaterThan(0);
+    expect(questions.every((q) => q.question.trim() && q.title.trim() && q.author.trim())).toBe(true);
   });
 });
