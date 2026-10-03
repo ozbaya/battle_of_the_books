@@ -125,3 +125,101 @@ export async function judgeAnswer(input: JudgeInput): Promise<JudgeResult> {
     return { titleCorrect: false, authorCorrect: false, reason: 'Judging failed; needs manual review.', needsReview: true };
   }
 }
+
+// --- Single-field judging, for the title<->author flashcard quiz ---------
+// Unlike judgeAnswer, the quiz only ever asks for ONE of title/author, never
+// both, so there's no "right author, wrong title" partial-credit case to
+// reason about — just a single quiz-prompt fast path then a smaller LLM
+// judge used in the quiz questions and answer API routes.
+
+export interface QuizJudgeInput {
+  kind: 'title' | 'author';
+  /** The title or author being quizzed for, matching `kind`. */
+  expected: string;
+  transcript: string;
+}
+
+export interface QuizJudgeResult {
+  correct: boolean;
+  reason: string;
+  needsReview?: boolean;
+}
+
+export function fuzzyMatchSingle(transcript: string, expected: string, kind: 'title' | 'author'): boolean {
+  const normTranscript = normalize(transcript);
+  if (normTranscript.length === 0) return false;
+
+  if (kind === 'title') {
+    const normExpected = normalize(expected);
+    return normExpected.length > 0 && (normTranscript.includes(normExpected) || normExpected.includes(normTranscript));
+  }
+
+  const words = normalize(expected).split(' ').filter(Boolean);
+  const lastName = words[words.length - 1] ?? '';
+  return lastName.length > 0 && normTranscript.includes(lastName);
+}
+
+const quizJudgmentSchema = z.object({
+  correct: z.boolean(),
+  reason: z.string(),
+});
+
+const QUIZ_SYSTEM_PROMPT = `You judge a child's spoken answer in a book trivia flashcard quiz ("Battle of the Books").
+The child was asked to name either a book's AUTHOR or a book's TITLE — never both at once — so
+grade only the one thing they were asked for. The transcript comes from a child speaking quickly,
+converted by speech-to-text, which may contain mistakes. Grade leniently — give credit whenever the
+kid most likely said the right answer:
+- Accept misheard or misspelled words that sound like the right answer.
+- Ignore missing or extra articles ("the", "a"), punctuation, apostrophes, capitalization, author
+  initials ("E.B. White" = "EB White" = "E White"), and filler words ("um", "I think it's…", "by").
+- Accept a clearly identifiable partial title (e.g. "Wimpy Kid" for "Diary of a Wimpy Kid") and the
+  author's last name alone.
+- Mark it wrong only when it is plainly a different book or person.
+- When genuinely unsure, lean toward giving credit.
+Respond with "correct" (boolean) and a one-sentence "reason".`;
+
+async function llmJudgeSingle(input: QuizJudgeInput): Promise<QuizJudgeResult> {
+  const model = process.env.OPENAI_JUDGE_MODEL ?? 'gpt-4o-mini';
+  const completion = await getClient().chat.completions.parse({
+    model,
+    messages: [
+      { role: 'system', content: QUIZ_SYSTEM_PROMPT },
+      {
+        role: 'user',
+        content: JSON.stringify({
+          askedFor: input.kind,
+          expectedAnswer: input.expected,
+          childsTranscript: input.transcript,
+        }),
+      },
+    ],
+    response_format: zodResponseFormat(quizJudgmentSchema, 'judgment'),
+  });
+
+  const parsed = completion.choices[0]?.message?.parsed;
+  if (!parsed) {
+    return { correct: false, reason: 'Judge returned no result.', needsReview: true };
+  }
+  return parsed;
+}
+
+export async function judgeQuizAnswer(input: QuizJudgeInput): Promise<QuizJudgeResult> {
+  const transcript = input.transcript.trim();
+  if (!transcript) {
+    return { correct: false, reason: 'Empty transcript — nothing was said.' };
+  }
+
+  if (process.env.MOCK_AI === 'true') {
+    return { correct: fuzzyMatchSingle(transcript, input.expected, input.kind), reason: 'MOCK_AI: fuzzy match only.' };
+  }
+
+  if (fuzzyMatchSingle(transcript, input.expected, input.kind)) {
+    return { correct: true, reason: 'Fast path: clear fuzzy match.' };
+  }
+
+  try {
+    return await llmJudgeSingle(input);
+  } catch {
+    return { correct: false, reason: 'Judging failed; needs manual review.', needsReview: true };
+  }
+}

@@ -12,6 +12,16 @@ export function scoreAnswer(input: {
 }
 
 /**
+ * For the title<->author flashcard quiz, which only ever asks for one field
+ * at a time — there's no partial credit to work out, just right/wrong/
+ * nothing recorded.
+ */
+export function scoreQuizAnswer(input: { correct: boolean; recorded: boolean }): number {
+  if (!input.recorded) return SCORE.NONE;
+  return input.correct ? SCORE.FULL : SCORE.WRONG;
+}
+
+/**
  * The only place scores are ever set. Replays `history` from scratch every
  * time, so it's pure and idempotent — used after every judged answer and
  * after an admin override, never incremented inline.

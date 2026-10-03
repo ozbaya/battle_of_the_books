@@ -78,6 +78,22 @@ export default function HomePage() {
         </span>
       </Link>
 
+      <Link
+        href="/quiz"
+        className="flex w-full max-w-md items-center justify-between rounded-2xl bg-violet-500 px-6 py-5 text-left text-white shadow-lg transition-transform hover:bg-violet-400 active:scale-95"
+      >
+        <span>
+          <span className="flex items-center gap-2">
+            <span className="text-xl font-black">🧠 Title &amp; Author Quiz</span>
+            <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold uppercase tracking-wide">Preview</span>
+          </span>
+          <span className="block text-sm opacity-90">Name the author, or name the book — quick flashcard-style questions</span>
+        </span>
+        <span className="text-2xl" aria-hidden>
+          →
+        </span>
+      </Link>
+
       <Link href="/admin" className="text-sm text-neutral-500 underline hover:text-neutral-700 dark:hover:text-neutral-300">
         Parent/host admin
       </Link>
