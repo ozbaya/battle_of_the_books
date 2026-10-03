@@ -28,17 +28,29 @@ const CELEBRATION_IMAGES: { src: string; width: number; height: number; alt: str
   { src: '/quiz-celebrations/thumbs-up-gnome.png', width: 1024, height: 1024, alt: 'Thumbs up gnome' },
 ];
 const CELEBRATION_DISPLAY_MS = 3000;
+const CELEBRATION_JUMP_DURATION_S = 1.2; // 50% slower than the original 0.8s
 
 // A sad trumpet sting on a wrong answer — purely for fun, quiz-mode-only.
 // No unlock/gesture gating like the synthesized sounds in lib/sound.ts: by
 // the time this fires, the player has already tapped at least twice (Start
 // the quiz, then ANSWER/Submit), so autoplay restrictions don't apply.
 function playSadTrumpet() {
-  new Audio('/A_sad_trumpet.mp3').play().catch(() => {});
+  new Audio('/quiz-sounds/sad-trumpet.mp3').play().catch(() => {});
 }
 
-function randomCelebrationImage() {
-  return CELEBRATION_IMAGES[Math.floor(Math.random() * CELEBRATION_IMAGES.length)];
+interface Celebration {
+  image: (typeof CELEBRATION_IMAGES)[number];
+  /** Random sideways drift (vw) for each half of the jump cycle — see the celebration-jump keyframes in globals.css. */
+  xA: number;
+  xB: number;
+}
+
+function randomCelebration(): Celebration {
+  const image = CELEBRATION_IMAGES[Math.floor(Math.random() * CELEBRATION_IMAGES.length)];
+  const xA = Math.random() * 70 - 35; // -35vw..35vw
+  let xB = Math.random() * 70 - 35;
+  if (Math.abs(xB - xA) < 20) xB = xA + (xB >= xA ? 20 : -20); // keep the left/right motion visible
+  return { image, xA, xB };
 }
 
 interface QuizPromptMeta {
@@ -213,7 +225,7 @@ function QuizQuestionView({
   const [gaveUp, setGaveUp] = useState(false);
   const [readyForNext, setReadyForNext] = useState(false);
   const [revealAnswer, setRevealAnswer] = useState<string | null>(null);
-  const [celebration, setCelebration] = useState<(typeof CELEBRATION_IMAGES)[number] | null>(null);
+  const [celebration, setCelebration] = useState<Celebration | null>(null);
 
   async function handleShowAnswer() {
     setGaveUp(true);
@@ -234,7 +246,7 @@ function QuizQuestionView({
         if (outcome.points === SCORE.WRONG) playSadTrumpet();
         setTimeout(() => setReadyForNext(true), WRONG_ANSWER_REVEAL_MS);
       } else if (correct) {
-        setCelebration(randomCelebrationImage());
+        setCelebration(randomCelebration());
         setTimeout(() => setReadyForNext(true), CELEBRATION_DISPLAY_MS);
       } else {
         setReadyForNext(true);
@@ -305,13 +317,19 @@ function QuizQuestionView({
           style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
         >
           <Image
-            src={celebration.src}
-            alt={celebration.alt}
-            width={celebration.width}
-            height={celebration.height}
+            src={celebration.image.src}
+            alt={celebration.image.alt}
+            width={celebration.image.width}
+            height={celebration.image.height}
             unoptimized
             className="h-56 w-56 rounded-2xl object-cover shadow-xl sm:h-72 sm:w-72"
-            style={{ animation: 'celebration-jump 0.8s ease-in-out infinite' }}
+            style={
+              {
+                animation: `celebration-jump ${CELEBRATION_JUMP_DURATION_S}s ease-in-out infinite`,
+                '--jump-x-a': `${celebration.xA}vw`,
+                '--jump-x-b': `${celebration.xB}vw`,
+              } as React.CSSProperties
+            }
           />
         </div>
       )}
