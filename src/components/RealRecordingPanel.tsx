@@ -24,6 +24,7 @@ export function RealRecordingPanel({
   const recorderRef = useRef<AnswerRecorder | null>(null);
   const startedAtRef = useRef<number | null>(null);
   const unmountedRef = useRef(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const [phase, setPhase] = useState<Phase>('starting');
   const [remainingMs, setRemainingMs] = useState(RECORDING_DURATION_MS);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -87,6 +88,10 @@ export function RealRecordingPanel({
   }
 
   useEffect(() => {
+    if (phase === 'recording') buttonRef.current?.focus();
+  }, [phase]);
+
+  useEffect(() => {
     if (phase !== 'recording') return;
     const id = setInterval(() => {
       const startedAt = startedAtRef.current;
@@ -102,6 +107,26 @@ export function RealRecordingPanel({
     const result = await recorder.stop();
     await upload(result);
   }
+
+  function cancel() {
+    const recorder = recorderRef.current;
+    if (!recorder || phase !== 'recording') return;
+    recorder.cancel();
+    // Deliberate cancel: no transcript to show, go straight to the verdict.
+    setOutcome({ transcript: '', points: 0, recorded: false });
+    setPhase('result');
+  }
+
+  // Esc cancels the recording on mouse devices (CLAUDE.md §8).
+  useEffect(() => {
+    if (phase !== 'recording') return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') cancel();
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- cancel reads refs/state via closures re-created each render; re-subscribing on phase change alone is correct here
+  }, [phase]);
 
   if (phase === 'error') {
     return (
@@ -120,13 +145,14 @@ export function RealRecordingPanel({
 
   return (
     <button
+      ref={buttonRef}
       type="button"
       disabled={phase !== 'recording'}
       onPointerDown={(e) => {
         e.preventDefault();
         finish();
       }}
-      className="relative flex h-full w-full select-none items-center justify-center rounded-[2rem] bg-rose-500 text-white shadow-xl [touch-action:manipulation]"
+      className="relative flex h-full min-h-[200px] w-full min-w-[200px] select-none items-center justify-center rounded-[2rem] bg-rose-500 text-white shadow-xl [touch-action:manipulation] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose-300"
     >
       {phase === 'starting' ? (
         <span className="text-[clamp(1.1rem,3.5vw,1.75rem)] font-bold">Starting mic…</span>
@@ -134,6 +160,7 @@ export function RealRecordingPanel({
         <>
           <RingProgress fraction={fraction} />
           <span className="z-10 text-[clamp(2.5rem,10vw,4.5rem)] font-black tabular-nums">{seconds}</span>
+          <span className="absolute bottom-3 hidden text-xs font-medium opacity-80 mouse:block">Click to finish early · Esc to cancel</span>
         </>
       )}
     </button>

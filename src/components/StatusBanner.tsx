@@ -1,15 +1,21 @@
 'use client';
 
 import type { PublicGameState } from '@/lib/game/engine';
-import { Countdown } from './Countdown';
+import { Countdown, useRemainingMs } from './Countdown';
 
 function playerName(state: PublicGameState, playerId: string | undefined): string {
   if (!playerId) return 'Someone';
   return state.players[playerId]?.name ?? 'Someone';
 }
 
+// How long before reveal the robots' stated answer replaces "thinking…".
+const ROBOT_ANSWER_ANNOUNCE_MS = 900;
+
 export function StatusBanner({ state, clockOffset }: { state: PublicGameState; clockOffset: number }) {
   const { phase } = state;
+  // Called unconditionally (rules of hooks) even though it only matters for
+  // ROBOT_ANSWERING; useRemainingMs itself tolerates an undefined target.
+  const robotRemainingMs = useRemainingMs(phase.name === 'ROBOT_ANSWERING' ? phase.revealAt : undefined, clockOffset);
 
   if (phase.name === 'LOBBY') {
     const names = Object.values(state.players).map((p) => p.name);
@@ -31,11 +37,16 @@ export function StatusBanner({ state, clockOffset }: { state: PublicGameState; c
   if (phase.name === 'KIDS_ROUND') {
     if (phase.firstRespondent) {
       const others = Object.values(phase.answers).filter((a) => a.playerId !== phase.firstRespondent);
+      const inProgress = others.filter((a) => a.status !== 'done');
       return (
         <Banner title={`${playerName(state, phase.firstRespondent)} answered first for the team!`}>
-          {others.length > 0 && `Others are still answering: `}
+          {inProgress.length > 0 && (
+            <div>{inProgress.map((a) => `${playerName(state, a.playerId)} is answering…`).join('  ')}</div>
+          )}
           {phase.buttonsCloseAt !== undefined && (
-            <Countdown targetMs={phase.buttonsCloseAt} clockOffset={clockOffset} />
+            <div>
+              Others can still answer: <Countdown targetMs={phase.buttonsCloseAt} clockOffset={clockOffset} />
+            </div>
           )}
         </Banner>
       );
@@ -51,9 +62,18 @@ export function StatusBanner({ state, clockOffset }: { state: PublicGameState; c
   }
 
   if (phase.name === 'ROBOT_ANSWERING') {
+    const announcing = robotRemainingMs <= ROBOT_ANSWER_ANNOUNCE_MS;
     return (
       <Banner title={phase.isSteal ? '🤖 Team Robo is trying to steal the points!' : '🤖 The robots pushed the button first!'}>
-        Thinking… <Countdown targetMs={phase.revealAt} clockOffset={clockOffset} />
+        {announcing ? (
+          <>
+            Robots say: <em>&ldquo;{phase.plan.displayTitle} by {phase.plan.displayAuthor}&rdquo;</em>
+          </>
+        ) : (
+          <>
+            Thinking… <Countdown targetMs={phase.revealAt} clockOffset={clockOffset} />
+          </>
+        )}
       </Banner>
     );
   }

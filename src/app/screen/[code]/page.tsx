@@ -3,8 +3,10 @@
 import { use } from 'react';
 import { JoinQR } from '@/components/JoinQR';
 import { Scoreboard } from '@/components/Scoreboard';
+import { SoundToggle } from '@/components/SoundToggle';
 import { StatusBanner } from '@/components/StatusBanner';
 import { useClientValue } from '@/lib/hooks/useClientValue';
+import { useGameSounds } from '@/lib/hooks/useGameSounds';
 import { useGameState } from '@/lib/hooks/useGameState';
 
 function chipForAnswer(status: string, points: number | undefined): string {
@@ -20,6 +22,7 @@ export default function ScreenPage({ params }: { params: Promise<{ code: string 
   const { code } = use(params);
   const { state, clockOffset, error } = useGameState(code);
   const joinUrl = useClientValue(() => `${window.location.origin}/play/${code}`, '');
+  useGameSounds(state);
 
   if (error) {
     return (
@@ -39,6 +42,7 @@ export default function ScreenPage({ params }: { params: Promise<{ code: string 
   if (state.phase.name === 'LOBBY') {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-neutral-950 p-8 text-center text-white">
+        <SoundToggle />
         <h1 className="text-[clamp(2rem,6vw,4rem)] font-black">Join at {joinUrl.replace(/^https?:\/\//, '')}</h1>
         <p className="text-[clamp(2.5rem,10vw,6rem)] font-black tracking-widest text-emerald-400">{code}</p>
         {joinUrl && <JoinQR url={joinUrl} size={220} />}
@@ -58,6 +62,7 @@ export default function ScreenPage({ params }: { params: Promise<{ code: string 
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-neutral-950 p-8 text-white">
+      <SoundToggle />
       <h1 className="text-center text-[clamp(1.75rem,5vw,3.5rem)] font-black leading-tight">{state.questionText}</h1>
       <div className="w-full max-w-3xl">
         <StatusBanner state={state} clockOffset={clockOffset} />

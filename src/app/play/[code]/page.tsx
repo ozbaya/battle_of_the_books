@@ -164,13 +164,16 @@ function PlayingView({
     }
   }, [code, playerId, state.currentIndex]);
 
-  // Space/Enter presses on mouse devices; ignore key auto-repeat.
+  // Space/Enter presses on mouse devices; ignore key auto-repeat. Note the
+  // ANSWER button auto-focuses itself (see AnswerButton), so excluding a
+  // focused BUTTON here would block the very button this is meant to
+  // activate — only text-entry targets are excluded.
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.repeat) return;
       if (e.code !== 'Space' && e.code !== 'Enter') return;
       const target = e.target as HTMLElement | null;
-      if (target && ['INPUT', 'TEXTAREA', 'BUTTON'].includes(target.tagName)) return;
+      if (target && ['INPUT', 'TEXTAREA'].includes(target.tagName)) return;
       const status = computeMyStatus(state, playerId, serverAlignedNow(clockOffset), pending);
       if (status.status === 'ready') {
         e.preventDefault();
@@ -276,6 +279,7 @@ function PlayingView({
 
   return (
     <main className="flex h-dvh flex-col gap-3 overflow-hidden bg-neutral-50 p-3 pb-[env(safe-area-inset-bottom)] landscape:flex-row dark:bg-neutral-950">
+      <PortraitRotateHint />
       <div className="flex min-h-0 flex-[1.1] items-stretch justify-center landscape:short:p-1">
         {my.showAnswerInput ? (
           state.mockAi ? (
@@ -359,4 +363,13 @@ function MockAnswerForm({ onSubmit }: { onSubmit: (text: string) => Promise<Answ
 
 function CenteredMessage({ children }: { children: React.ReactNode }) {
   return <main className="flex min-h-dvh items-center justify-center bg-neutral-50 p-6 text-center dark:bg-neutral-950">{children}</main>;
+}
+
+/** Friendly nudge on phones/tablets in portrait — portrait still works, this is just a hint (CLAUDE.md §8). */
+function PortraitRotateHint() {
+  return (
+    <div className="hidden touch:portrait:flex items-center justify-center gap-2 rounded-xl bg-amber-100 px-3 py-1.5 text-center text-sm font-semibold text-amber-900 dark:bg-amber-900/40 dark:text-amber-200">
+      <span aria-hidden>📱↻</span> Turn your phone sideways for the best view
+    </div>
+  );
 }

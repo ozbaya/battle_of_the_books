@@ -13,10 +13,10 @@ interface GameSummary {
 }
 
 const BUCKETS = [
-  { bucket: 'full', label: 'Full (+2)' },
-  { bucket: 'titleOnly', label: 'Title (+1)' },
-  { bucket: 'wrong', label: 'Wrong (−0.5)' },
-  { bucket: 'none', label: 'No answer (0)' },
+  { bucket: 'full', label: 'Full (+2)', points: 2 },
+  { bucket: 'titleOnly', label: 'Title (+1)', points: 1 },
+  { bucket: 'wrong', label: 'Wrong (−0.5)', points: -0.5 },
+  { bucket: 'none', label: 'No answer (0)', points: 0 },
 ] as const;
 
 export default function AdminPage() {
@@ -282,16 +282,23 @@ function ManageGame({ code }: { code: string }) {
                 <span className="font-bold">{r.points > 0 ? `+${r.points}` : r.points}</span>
                 {r.needsReview && <span className="rounded bg-amber-300 px-1 text-amber-900">needs review</span>}
                 <span className="flex gap-1">
-                  {BUCKETS.map((b) => (
-                    <button
-                      key={b.bucket}
-                      disabled={busy}
-                      onClick={() => action({ action: 'override', historyIndex: i, bucket: b.bucket })}
-                      className="rounded border border-neutral-300 px-2 py-0.5 text-xs hover:bg-black/10 dark:border-neutral-700 dark:hover:bg-white/10"
-                    >
-                      {b.label}
-                    </button>
-                  ))}
+                  {BUCKETS.map((b) => {
+                    const isCurrent = r.points === b.points;
+                    return (
+                      <button
+                        key={b.bucket}
+                        disabled={busy}
+                        onClick={() => action({ action: 'override', historyIndex: i, bucket: b.bucket })}
+                        className={`rounded border px-2 py-0.5 text-xs ${
+                          isCurrent
+                            ? 'border-emerald-500 bg-emerald-500 text-white'
+                            : 'border-neutral-300 hover:bg-black/10 dark:border-neutral-700 dark:hover:bg-white/10'
+                        }`}
+                      >
+                        {b.label}
+                      </button>
+                    );
+                  })}
                 </span>
               </li>
             ))}
