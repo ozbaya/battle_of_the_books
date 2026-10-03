@@ -68,14 +68,27 @@ async function loadIndexedGames(limit: number): Promise<GameState[]> {
   return loaded.filter((g): g is GameState => g !== null);
 }
 
-/** "Recent games" list for /admin (includes finished games). */
+// How many of the most-recently-created game codes to consider when building
+// either list. Must be generous: a currently-active game must never be
+// hidden from /admin just because enough other games (e.g. leftover test
+// games) were created more recently than it — recency alone is the wrong
+// filter for "games the admin needs to manage". 200 trades a one-time burst
+// of store reads (only on an admin page load/refresh, never polled) for that
+// guarantee holding in all but extreme cases.
+const GAME_LIST_CANDIDATE_LIMIT = 200;
+const RECENT_GAMES_DISPLAY_LIMIT = 30;
+
+/** "Recent games" list for /admin: every active game, plus recent finished ones for history. */
 export async function listRecentGames(): Promise<GameState[]> {
-  return loadIndexedGames(20);
+  const games = await loadIndexedGames(GAME_LIST_CANDIDATE_LIMIT);
+  const active = games.filter((g) => g.phase.name !== 'GAME_OVER');
+  const finished = games.filter((g) => g.phase.name === 'GAME_OVER');
+  return [...active, ...finished].slice(0, RECENT_GAMES_DISPLAY_LIMIT);
 }
 
 /** Public (unauthenticated) list for the home page: joinable games, i.e. not yet finished. */
 export async function listActiveGames(): Promise<GameState[]> {
-  const games = await loadIndexedGames(50);
+  const games = await loadIndexedGames(GAME_LIST_CANDIDATE_LIMIT);
   return games.filter((g) => g.phase.name !== 'GAME_OVER');
 }
 
