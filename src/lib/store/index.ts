@@ -1,7 +1,7 @@
 import { CAS_MAX_RETRIES } from '../game/config';
 import { advance } from '../game/engine';
 import type { GameState, Question } from '../game/types';
-import { listAllGames, memoryStore } from './memory';
+import { memoryStore } from './memory';
 import { redisStore } from './redis';
 import type { Store } from './types';
 
@@ -40,26 +40,32 @@ export async function getGame(code: string): Promise<GameState | null> {
 }
 
 /**
- * Best-effort "recent games" list for /admin. Only the memory store can list
- * everything cheaply; Redis needs its own index (see the TODO in redis.ts),
- * out of scope for this pass since STORE=memory is the default.
+ * Loads every game named in the store's recent-codes index, dropping (and
+ * lazily forgetting) any code whose game has since expired. Works the same
+ * way against both stores now that both implement listCodes()/forgetCode().
  */
-export async function listRecentGames(): Promise<GameState[]> {
-  if (pickStore() !== memoryStore) return [];
-  return listAllGames()
-    .sort((a, b) => b.createdAt - a.createdAt)
-    .slice(0, 20);
+async function loadIndexedGames(limit: number): Promise<GameState[]> {
+  const store = pickStore();
+  const codes = await store.listCodes(limit);
+  const loaded = await Promise.all(
+    codes.map(async (code) => {
+      const state = await store.load(code);
+      if (!state) await store.forgetCode(code);
+      return state;
+    })
+  );
+  return loaded.filter((g): g is GameState => g !== null);
 }
 
-/**
- * Public (unauthenticated) list for the home page: joinable games, i.e. not
- * yet finished. Same memory-store-only limitation as listRecentGames.
- */
+/** "Recent games" list for /admin (includes finished games). */
+export async function listRecentGames(): Promise<GameState[]> {
+  return loadIndexedGames(20);
+}
+
+/** Public (unauthenticated) list for the home page: joinable games, i.e. not yet finished. */
 export async function listActiveGames(): Promise<GameState[]> {
-  if (pickStore() !== memoryStore) return [];
-  return listAllGames()
-    .filter((g) => g.phase.name !== 'GAME_OVER')
-    .sort((a, b) => b.createdAt - a.createdAt);
+  const games = await loadIndexedGames(50);
+  return games.filter((g) => g.phase.name !== 'GAME_OVER');
 }
 
 /**

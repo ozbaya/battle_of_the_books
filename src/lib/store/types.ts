@@ -9,4 +9,8 @@ export interface Store {
    * else wrote first) rather than throwing, so callers can retry.
    */
   casSave(code: string, expectedVersion: number, nextState: GameState): Promise<boolean>;
+  /** Most-recently-created codes first, for the home page and admin lists. */
+  listCodes(limit: number): Promise<string[]>;
+  /** Best-effort cleanup when a listed code turns out to be gone (e.g. expired). No-op where irrelevant. */
+  forgetCode(code: string): Promise<void>;
 }

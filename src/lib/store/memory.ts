@@ -12,11 +12,6 @@ function gamesMap(): Map<string, GameState> {
   return globalThis.__battleOfTheBooksGames;
 }
 
-/** Not part of the Store interface — only meaningful for the memory store, used by the admin game list. */
-export function listAllGames(): GameState[] {
-  return Array.from(gamesMap().values()).map((g) => structuredClone(g));
-}
-
 /** In-memory store for local dev and tests. Not shared across server instances. */
 export const memoryStore: Store = {
   async load(code) {
@@ -33,5 +28,16 @@ export const memoryStore: Store = {
     if (!current || current.version !== expectedVersion) return false;
     gamesMap().set(code, structuredClone(nextState));
     return true;
+  },
+
+  async listCodes(limit) {
+    return Array.from(gamesMap().values())
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, limit)
+      .map((g) => g.code);
+  },
+
+  async forgetCode(code) {
+    gamesMap().delete(code);
   },
 };

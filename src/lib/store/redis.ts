@@ -10,6 +10,13 @@ function key(code: string): string {
   return `game:${code}`;
 }
 
+// Sorted set of every game code ever created, scored by creation time, so
+// the home page / admin lists can enumerate games without a full key scan.
+// Entries aren't removed when a game's own key expires (TTL only applies to
+// the `game:*` key) — listCodes()'s callers are expected to drop any code
+// whose load() comes back null, and forgetCode() lazily prunes it here too.
+const INDEX_KEY = 'games:index';
+
 function readEnv(primary: string, fallback: string): { url: string; token: string } {
   const url = process.env[primary + '_URL'] ?? process.env[fallback + '_URL'];
   const token = process.env[primary + '_TOKEN'] ?? process.env[fallback + '_TOKEN'];
@@ -42,10 +49,6 @@ redis.call('SET', KEYS[1], ARGV[2], 'EX', ARGV[3])
 return 1
 `;
 
-// TODO (Milestone 6+): the admin "list of recent games" needs its own index
-// (e.g. a ZSET of codes by creation time) since an individual key's TTL
-// expiry won't remove it from such a list — lazily filter missing keys on
-// read rather than maintaining a separate cleanup job.
 export const redisStore: Store = {
   async load(code) {
     const raw = await getClient().get<GameState>(key(code));
@@ -53,7 +56,10 @@ export const redisStore: Store = {
   },
 
   async create(code, state) {
-    await getClient().set(key(code), state, { ex: GAME_TTL_SECONDS });
+    await Promise.all([
+      getClient().set(key(code), state, { ex: GAME_TTL_SECONDS }),
+      getClient().zadd(INDEX_KEY, { score: state.createdAt, member: code }),
+    ]);
   },
 
   async casSave(code, expectedVersion, nextState) {
@@ -63,5 +69,13 @@ export const redisStore: Store = {
       [String(expectedVersion), JSON.stringify(nextState), String(GAME_TTL_SECONDS)]
     );
     return result === 1;
+  },
+
+  async listCodes(limit) {
+    return getClient().zrange<string[]>(INDEX_KEY, 0, limit - 1, { rev: true });
+  },
+
+  async forgetCode(code) {
+    await getClient().zrem(INDEX_KEY, code);
   },
 };
