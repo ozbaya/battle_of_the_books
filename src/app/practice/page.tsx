@@ -10,10 +10,18 @@ import { RealRecordingPanel } from '@/components/RealRecordingPanel';
 import { SCORE } from '@/lib/game/config';
 
 const ROUND_SIZE = 10;
+// How long to hold the correct answer on screen when the kid didn't get full
+// credit, so there's time to actually read and learn it before moving on.
+const WRONG_ANSWER_REVEAL_MS = 3000;
 
 interface QuestionMeta {
   index: number;
   question: string;
+}
+
+interface PracticeAnswerResult extends AnswerOutcome {
+  correctTitle: string;
+  correctAuthor: string;
 }
 
 interface RoundResult {
@@ -78,7 +86,7 @@ export default function PracticePage() {
     }
   }
 
-  async function submitMock(questionIndex: number, text: string): Promise<AnswerOutcome | null> {
+  async function submitMock(questionIndex: number, text: string): Promise<PracticeAnswerResult | null> {
     const res = await fetch('/api/practice/answer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -87,10 +95,16 @@ export default function PracticePage() {
     const body = await res.json().catch(() => null);
     if (!body) return null;
     recordResult(body.points);
-    return { transcript: body.transcript, points: body.points, recorded: body.recorded };
+    return {
+      transcript: body.transcript,
+      points: body.points,
+      recorded: body.recorded,
+      correctTitle: body.correctTitle,
+      correctAuthor: body.correctAuthor,
+    };
   }
 
-  async function submitReal(questionIndex: number, blob: Blob, filename: string): Promise<AnswerOutcome | null> {
+  async function submitReal(questionIndex: number, blob: Blob, filename: string): Promise<PracticeAnswerResult | null> {
     const form = new FormData();
     form.append('index', String(questionIndex));
     form.append('audio', blob, filename);
@@ -98,7 +112,13 @@ export default function PracticePage() {
     const body = await res.json().catch(() => null);
     if (!body) return null;
     recordResult(body.points);
-    return { transcript: body.transcript, points: body.points, recorded: body.recorded };
+    return {
+      transcript: body.transcript,
+      points: body.points,
+      recorded: body.recorded,
+      correctTitle: body.correctTitle,
+      correctAuthor: body.correctAuthor,
+    };
   }
 
   if (!questions) {
@@ -171,19 +191,31 @@ function PracticeQuestionView({
   totalQuestions: number;
   questionText: string;
   mockAi: boolean;
-  onSubmitMock: (text: string) => Promise<AnswerOutcome | null>;
-  onSubmitReal: (blob: Blob, filename: string) => Promise<AnswerOutcome | null>;
+  onSubmitMock: (text: string) => Promise<PracticeAnswerResult | null>;
+  onSubmitReal: (blob: Blob, filename: string) => Promise<PracticeAnswerResult | null>;
   onNext: () => void;
   onFinish: () => void;
   isLast: boolean;
 }) {
   const [tapped, setTapped] = useState(false);
   const [readyForNext, setReadyForNext] = useState(false);
+  const [revealAnswer, setRevealAnswer] = useState<{ title: string; author: string } | null>(null);
 
-  // Mirrors AnswerReveal's own ANSWER_REVEAL_DELAY_MS so "Next question"
-  // doesn't appear before the child component's own verdict reveal settles.
-  function scheduleNextReady() {
-    setTimeout(() => setReadyForNext(true), ANSWER_REVEAL_DELAY_MS);
+  // Mirrors AnswerReveal's own ANSWER_REVEAL_DELAY_MS so this fires at the
+  // same moment the child component's own verdict (✅/❌) appears. When the
+  // kid didn't get full credit, hold the correct answer on screen for a bit
+  // longer before letting them move on, instead of jumping straight to
+  // "Next question".
+  function handleOutcome(outcome: PracticeAnswerResult | null) {
+    const needsReveal = Boolean(outcome && outcome.points < SCORE.FULL);
+    setTimeout(() => {
+      if (needsReveal && outcome) {
+        setRevealAnswer({ title: outcome.correctTitle, author: outcome.correctAuthor });
+        setTimeout(() => setReadyForNext(true), WRONG_ANSWER_REVEAL_MS);
+      } else {
+        setReadyForNext(true);
+      }
+    }, ANSWER_REVEAL_DELAY_MS);
   }
 
   // Space/Enter presses on mouse devices, same as /play. AnswerButton
@@ -204,7 +236,13 @@ function PracticeQuestionView({
 
   async function handleMockSubmit(text: string) {
     const outcome = await onSubmitMock(text);
-    scheduleNextReady();
+    handleOutcome(outcome);
+    return outcome;
+  }
+
+  async function handleRealSubmit(blob: Blob, filename: string) {
+    const outcome = await onSubmitReal(blob, filename);
+    handleOutcome(outcome);
     return outcome;
   }
 
@@ -229,9 +267,14 @@ function PracticeQuestionView({
         ) : mockAi ? (
           <MockAnswerForm onSubmit={handleMockSubmit} />
         ) : (
-          <RealRecordingPanel onUpload={onSubmitReal} onSettled={scheduleNextReady} />
+          <RealRecordingPanel onUpload={handleRealSubmit} onSettled={() => handleOutcome(null)} />
         )}
       </div>
+      {revealAnswer && (
+        <p className="text-center text-[clamp(1rem,3vw,1.35rem)] font-bold text-sky-700 dark:text-sky-300">
+          The answer was <span className="underline">{revealAnswer.title}</span> by {revealAnswer.author}
+        </p>
+      )}
       <div className="flex justify-center">
         {readyForNext && (
           <button onClick={onNext} className="rounded-xl bg-sky-500 px-6 py-3 text-lg font-bold text-white">
