@@ -18,8 +18,16 @@ type Phase = 'starting' | 'recording' | RevealPhase | 'error';
  */
 export function RealRecordingPanel({
   onUpload,
+  onSettled,
 }: {
   onUpload: (blob: Blob, filename: string) => Promise<AnswerOutcome | null>;
+  /**
+   * Fires once a terminal state is reached — a successful/failed upload, or
+   * a deliberate cancel — for callers that need to know "we're done here"
+   * regardless of path. onUpload alone misses the cancel case, since cancel
+   * never calls it (there's nothing to upload).
+   */
+  onSettled?: () => void;
 }) {
   const recorderRef = useRef<AnswerRecorder | null>(null);
   const startedAtRef = useRef<number | null>(null);
@@ -77,11 +85,13 @@ export function RealRecordingPanel({
       if (unmountedRef.current) return;
       setErrorMessage(err instanceof Error ? err.message : 'Could not submit your answer. Please tell an adult.');
       setPhase('error');
+      onSettled?.();
       return;
     }
     if (unmountedRef.current) return;
     setOutcome(result2 ?? { transcript: '', points: 0, recorded: false });
     setPhase('transcript');
+    onSettled?.();
     setTimeout(() => {
       if (!unmountedRef.current) setPhase('result');
     }, ANSWER_REVEAL_DELAY_MS);
@@ -115,6 +125,7 @@ export function RealRecordingPanel({
     // Deliberate cancel: no transcript to show, go straight to the verdict.
     setOutcome({ transcript: '', points: 0, recorded: false });
     setPhase('result');
+    onSettled?.();
   }
 
   // Esc cancels the recording on mouse devices (CLAUDE.md §8).

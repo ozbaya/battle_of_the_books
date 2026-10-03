@@ -47,6 +47,19 @@ export default function HomePage() {
         ))}
       </div>
 
+      <Link
+        href="/practice"
+        className="flex w-full max-w-md items-center justify-between rounded-2xl bg-sky-500 px-6 py-5 text-left text-white shadow-lg transition-transform hover:bg-sky-400 active:scale-95"
+      >
+        <span>
+          <span className="block text-xl font-black">🎯 Practice on your own</span>
+          <span className="block text-sm opacity-90">No team needed — just you and the questions</span>
+        </span>
+        <span className="text-2xl" aria-hidden>
+          →
+        </span>
+      </Link>
+
       <Link href="/admin" className="text-sm text-neutral-500 underline hover:text-neutral-700 dark:hover:text-neutral-300">
         Parent/host admin
       </Link>
