@@ -150,6 +150,7 @@ export default function PracticePage() {
       onSubmitMock={(text) => submitMock(questionIndex, text)}
       onSubmitReal={(blob, filename) => submitReal(questionIndex, blob, filename)}
       onNext={next}
+      onFinish={() => setSessionPhase('done')}
       isLast={position + 1 >= order.length}
     />
   );
@@ -163,6 +164,7 @@ function PracticeQuestionView({
   onSubmitMock,
   onSubmitReal,
   onNext,
+  onFinish,
   isLast,
 }: {
   questionNumber: number;
@@ -172,6 +174,7 @@ function PracticeQuestionView({
   onSubmitMock: (text: string) => Promise<AnswerOutcome | null>;
   onSubmitReal: (blob: Blob, filename: string) => Promise<AnswerOutcome | null>;
   onNext: () => void;
+  onFinish: () => void;
   isLast: boolean;
 }) {
   const [tapped, setTapped] = useState(false);
@@ -183,6 +186,22 @@ function PracticeQuestionView({
     setTimeout(() => setReadyForNext(true), ANSWER_REVEAL_DELAY_MS);
   }
 
+  // Space/Enter presses on mouse devices, same as /play. AnswerButton
+  // auto-focuses itself, so (as there) only text-entry targets are excluded.
+  useEffect(() => {
+    if (tapped) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.repeat) return;
+      if (e.code !== 'Space' && e.code !== 'Enter') return;
+      const target = e.target as HTMLElement | null;
+      if (target && ['INPUT', 'TEXTAREA'].includes(target.tagName)) return;
+      e.preventDefault();
+      setTapped(true);
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [tapped]);
+
   async function handleMockSubmit(text: string) {
     const outcome = await onSubmitMock(text);
     scheduleNextReady();
@@ -191,9 +210,18 @@ function PracticeQuestionView({
 
   return (
     <main className="flex h-dvh flex-col gap-4 bg-neutral-50 p-4 pb-[env(safe-area-inset-bottom)] dark:bg-neutral-950">
-      <p className="text-center text-sm font-semibold opacity-60">
-        Question {questionNumber} of {totalQuestions}
-      </p>
+      <div className="flex items-center justify-between">
+        <button
+          onClick={onFinish}
+          className="text-sm text-neutral-500 underline hover:text-neutral-700 dark:hover:text-neutral-300"
+        >
+          Finish round
+        </button>
+        <p className="text-sm font-semibold opacity-60">
+          Question {questionNumber} of {totalQuestions}
+        </p>
+        <span className="w-16" aria-hidden />
+      </div>
       <p className="text-center text-[clamp(1.1rem,3.5vw,1.6rem)] font-bold leading-tight">{questionText}</p>
       <div className="flex min-h-0 flex-1 items-stretch justify-center">
         {!tapped ? (
@@ -208,6 +236,14 @@ function PracticeQuestionView({
         {readyForNext && (
           <button onClick={onNext} className="rounded-xl bg-sky-500 px-6 py-3 text-lg font-bold text-white">
             {isLast ? 'See my results →' : 'Next question →'}
+          </button>
+        )}
+        {!tapped && (
+          <button
+            onClick={onNext}
+            className="rounded-xl border border-neutral-300 px-6 py-3 text-lg font-bold text-neutral-600 hover:bg-black/5 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-white/5"
+          >
+            {isLast ? 'Skip to results →' : 'Skip this question →'}
           </button>
         )}
       </div>
