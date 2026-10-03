@@ -6,6 +6,7 @@ export interface TranscribeInput {
   prompt: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- signature fixed now; body arrives in Milestone 6
 export async function transcribeAnswer(_input: TranscribeInput): Promise<string> {
   if (process.env.MOCK_AI === 'true') {
     throw new Error('transcribeAnswer should not be called under MOCK_AI — /play submits typed text directly');
