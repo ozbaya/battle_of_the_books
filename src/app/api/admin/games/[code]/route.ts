@@ -40,7 +40,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           return applyAdminOverride(s, parsed.data.historyIndex, parsed.data.bucket);
       }
     });
-    return NextResponse.json(toPublicGameState(state, questions, now));
+    return NextResponse.json(toPublicGameState(state, questions, now, process.env.MOCK_AI === 'true'));
   } catch (err) {
     if (err instanceof GameNotFoundError) {
       return NextResponse.json({ error: 'Game not found' }, { status: 404 });

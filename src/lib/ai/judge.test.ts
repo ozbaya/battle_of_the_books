@@ -1,4 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+const { parseMock } = vi.hoisted(() => ({ parseMock: vi.fn() }));
+
+vi.mock('openai', () => ({
+  default: class FakeOpenAI {
+    chat = { completions: { parse: parseMock } };
+  },
+}));
+
 import { fuzzyMatch, judgeAnswer } from './judge';
 
 describe('fuzzyMatch', () => {
@@ -33,14 +42,14 @@ describe('fuzzyMatch', () => {
   });
 });
 
-describe('judgeAnswer', () => {
+describe('judgeAnswer under MOCK_AI', () => {
   const originalMockAi = process.env.MOCK_AI;
   beforeEach(() => {
     process.env.MOCK_AI = 'true';
+    parseMock.mockReset();
   });
   afterEach(() => {
     process.env.MOCK_AI = originalMockAi;
-    vi.unstubAllEnvs();
   });
 
   it('returns 0-equivalent result for an empty transcript without fuzzy matching', async () => {
@@ -48,7 +57,7 @@ describe('judgeAnswer', () => {
     expect(result).toEqual({ titleCorrect: false, authorCorrect: false, reason: expect.any(String) });
   });
 
-  it('uses fuzzy matching under MOCK_AI', async () => {
+  it('uses fuzzy matching only, never the LLM', async () => {
     const result = await judgeAnswer({
       question: 'Q',
       title: 'Holes',
@@ -57,12 +66,44 @@ describe('judgeAnswer', () => {
     });
     expect(result.titleCorrect).toBe(true);
     expect(result.authorCorrect).toBe(true);
+    expect(parseMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('judgeAnswer with real judging (MOCK_AI=false)', () => {
+  const originalMockAi = process.env.MOCK_AI;
+  beforeEach(() => {
+    process.env.MOCK_AI = 'false';
+    parseMock.mockReset();
+  });
+  afterEach(() => {
+    process.env.MOCK_AI = originalMockAi;
   });
 
-  it('rejects real judging when MOCK_AI is not set', async () => {
-    process.env.MOCK_AI = 'false';
-    await expect(
-      judgeAnswer({ question: 'Q', title: 'Holes', author: 'Louis Sachar', transcript: 'Holes by Louis Sachar' })
-    ).rejects.toThrow(/not implemented/);
+  it('skips the LLM call via the fast path on a clear fuzzy match', async () => {
+    const result = await judgeAnswer({
+      question: 'Q',
+      title: 'Holes',
+      author: 'Louis Sachar',
+      transcript: 'Holes by Louis Sachar',
+    });
+    expect(result.titleCorrect).toBe(true);
+    expect(parseMock).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the LLM for an ambiguous transcript and trusts its structured result', async () => {
+    parseMock.mockResolvedValueOnce({
+      choices: [{ message: { parsed: { titleCorrect: true, authorCorrect: false, reason: 'misheard title' } } }],
+    });
+    const result = await judgeAnswer({ question: 'Q', title: 'Holes', author: 'Louis Sachar', transcript: 'Howls' });
+    expect(parseMock).toHaveBeenCalledOnce();
+    expect(result).toEqual({ titleCorrect: true, authorCorrect: false, reason: 'misheard title' });
+  });
+
+  it('marks needsReview instead of crashing when the OpenAI call fails', async () => {
+    parseMock.mockRejectedValueOnce(new Error('API down'));
+    const result = await judgeAnswer({ question: 'Q', title: 'Holes', author: 'Louis Sachar', transcript: 'Howls' });
+    expect(result.needsReview).toBe(true);
+    expect(result.titleCorrect).toBe(false);
   });
 });

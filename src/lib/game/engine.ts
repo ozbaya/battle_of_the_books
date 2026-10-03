@@ -386,6 +386,8 @@ export interface PublicGameState {
   questionText: string | null;
   correctAnswer: { title: string; author: string } | null;
   serverNow: number;
+  /** Lets the client pick the mock text box vs. the real recorder without its own env var. */
+  mockAi: boolean;
 }
 
 /**
@@ -394,7 +396,12 @@ export interface PublicGameState {
  * authorCorrect flags and the robots' displayed answer once they've buzzed —
  * is safe to show live; only the question bank's answer key is secret.
  */
-export function toPublicGameState(state: GameState, questions: Question[], now: number): PublicGameState {
+export function toPublicGameState(
+  state: GameState,
+  questions: Question[],
+  now: number,
+  mockAi: boolean
+): PublicGameState {
   const revealed = state.phase.name === 'REVEAL' || state.phase.name === 'GAME_OVER';
   const current = questions.length > 0 ? getCurrentQuestion(state, questions) : null;
   return {
@@ -411,6 +418,7 @@ export function toPublicGameState(state: GameState, questions: Question[], now: 
     questionText: current?.question ?? null,
     correctAnswer: revealed && current ? { title: current.title, author: current.author } : null,
     serverNow: now,
+    mockAi,
   };
 }
 

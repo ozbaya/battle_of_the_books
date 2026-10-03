@@ -3,6 +3,8 @@
 import { use, useCallback, useEffect, useState } from 'react';
 import { AnswerButton, type AnswerButtonStatus } from '@/components/AnswerButton';
 import { Countdown } from '@/components/Countdown';
+import { MicLevelMeter, useMicCheck } from '@/components/MicCheck';
+import { RealRecordingPanel } from '@/components/RealRecordingPanel';
 import { Scoreboard } from '@/components/Scoreboard';
 import type { PublicGameState } from '@/lib/game/engine';
 import { useClientValue } from '@/lib/hooks/useClientValue';
@@ -16,41 +18,41 @@ interface MyStatus {
   status: AnswerButtonStatus;
   lockedReason?: string;
   points?: number;
-  showMockInput: boolean;
+  showAnswerInput: boolean;
 }
 
 function computeMyStatus(state: PublicGameState, playerId: string, now: number, optimisticPending: boolean): MyStatus {
   const { phase } = state;
 
   if (phase.name === 'ROBOT_ANSWERING') {
-    return { status: 'locked', lockedReason: 'The robots are answering…', showMockInput: false };
+    return { status: 'locked', lockedReason: 'The robots are answering…', showAnswerInput: false };
   }
 
   if (phase.name !== 'KIDS_ROUND') {
-    return { status: 'locked', lockedReason: 'Wait for the next question…', showMockInput: false };
+    return { status: 'locked', lockedReason: 'Wait for the next question…', showAnswerInput: false };
   }
 
   const mine = phase.answers[playerId];
   if (mine) {
     if (mine.status === 'done') {
       const points = mine.points ?? 0;
-      if (!mine.recorded) return { status: 'noAnswer', points, showMockInput: false };
-      if (points >= 2) return { status: 'correct', points, showMockInput: false };
-      if (points > 0) return { status: 'titleOnly', points, showMockInput: false };
-      return { status: 'wrong', points, showMockInput: false };
+      if (!mine.recorded) return { status: 'noAnswer', points, showAnswerInput: false };
+      if (points >= 2) return { status: 'correct', points, showAnswerInput: false };
+      if (points > 0) return { status: 'titleOnly', points, showAnswerInput: false };
+      return { status: 'wrong', points, showAnswerInput: false };
     }
-    return { status: 'checking', showMockInput: true };
+    return { status: 'checking', showAnswerInput: true };
   }
 
   if (optimisticPending) {
-    return { status: 'checking', showMockInput: true };
+    return { status: 'checking', showAnswerInput: true };
   }
 
   const canPress = !phase.firstRespondent || (phase.buttonsCloseAt !== undefined && now < phase.buttonsCloseAt);
   if (canPress) {
-    return { status: 'ready', showMockInput: false };
+    return { status: 'ready', showAnswerInput: false };
   }
-  return { status: 'locked', lockedReason: 'Wait for the next question…', showMockInput: false };
+  return { status: 'locked', lockedReason: 'Wait for the next question…', showAnswerInput: false };
 }
 
 export default function PlayPage({ params }: { params: Promise<{ code: string }> }) {
@@ -60,17 +62,18 @@ export default function PlayPage({ params }: { params: Promise<{ code: string }>
   const { state, clockOffset, error } = useGameState(code);
   const playerId = joinedPlayerId ?? storedPlayerId;
 
-  if (!playerId) return <JoinForm code={code} onJoined={setJoinedPlayerId} />;
+  if (!playerId) return <JoinForm code={code} mockAi={state?.mockAi ?? true} onJoined={setJoinedPlayerId} />;
   if (error) return <CenteredMessage>Couldn&apos;t reach the game: {error}</CenteredMessage>;
   if (!state) return <CenteredMessage>Loading…</CenteredMessage>;
 
   return <PlayingView code={code} playerId={playerId} state={state} clockOffset={clockOffset} />;
 }
 
-function JoinForm({ code, onJoined }: { code: string; onJoined: (playerId: string) => void }) {
+function JoinForm({ code, mockAi, onJoined }: { code: string; mockAi: boolean; onJoined: (playerId: string) => void }) {
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const mic = useMicCheck();
 
   async function join(e: React.FormEvent) {
     e.preventDefault();
@@ -78,11 +81,16 @@ function JoinForm({ code, onJoined }: { code: string; onJoined: (playerId: strin
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(`/api/games/${code}/join`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim() }),
-      });
+      // Both the join call and the mic permission prompt stem from this same
+      // tap (a user gesture, required by iOS Safari) — run them together.
+      const [res] = await Promise.all([
+        fetch(`/api/games/${code}/join`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name.trim() }),
+        }),
+        mockAi ? Promise.resolve() : mic.run(),
+      ]);
       const body = await res.json();
       if (!res.ok) {
         setError(body.error ?? 'Could not join');
@@ -117,6 +125,13 @@ function JoinForm({ code, onJoined }: { code: string; onJoined: (playerId: strin
           {busy ? 'Joining…' : 'Join'}
         </button>
         {error && <p className="text-sm text-rose-600">{error}</p>}
+        {!mockAi && mic.status === 'checking' && (
+          <div className="flex flex-col gap-1">
+            <p className="text-sm opacity-70">Say something to test your mic…</p>
+            <MicLevelMeter level={mic.level} />
+          </div>
+        )}
+        {!mockAi && mic.status === 'error' && <p className="text-sm text-amber-600">{mic.error?.message}</p>}
       </form>
     </main>
   );
@@ -177,6 +192,13 @@ function PlayingView({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ playerId, text }),
     });
+  }
+
+  async function submitRealAnswer(blob: Blob, filename: string) {
+    const form = new FormData();
+    form.append('playerId', playerId);
+    form.append('audio', blob, filename);
+    await fetch(`/api/games/${code}/answer`, { method: 'POST', body: form });
   }
 
   if (state.phase.name === 'GAME_OVER') {
@@ -248,8 +270,12 @@ function PlayingView({
   return (
     <main className="flex h-dvh flex-col gap-3 overflow-hidden bg-neutral-50 p-3 pb-[env(safe-area-inset-bottom)] landscape:flex-row dark:bg-neutral-950">
       <div className="flex min-h-0 flex-[1.1] items-stretch justify-center landscape:short:p-1">
-        {my.showMockInput ? (
-          <MockAnswerForm key={state.currentIndex} onSubmit={submitMockAnswer} />
+        {my.showAnswerInput ? (
+          state.mockAi ? (
+            <MockAnswerForm key={state.currentIndex} onSubmit={submitMockAnswer} />
+          ) : (
+            <RealRecordingPanel key={state.currentIndex} onUpload={submitRealAnswer} />
+          )
         ) : (
           <AnswerButton status={my.status} lockedReason={my.lockedReason} points={my.points} onPress={press} />
         )}
