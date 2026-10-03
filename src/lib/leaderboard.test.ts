@@ -127,4 +127,46 @@ describe('buildLeaderboard', () => {
     const sessions = Array.from({ length: 20 }, (_, i) => session({ name: `Player${i}`, correct: i }));
     expect(buildLeaderboard(sessions, 0, 3)).toHaveLength(3);
   });
+
+  it('nudges one robot close to (but below) a human leader, leaving the rest of the pack untouched', () => {
+    const now = 0;
+    // Just logged, so robots' natural idle-based scores are ~0 — far below
+    // a solid human score — and the human leader is also "recent" (no idle
+    // time has passed since their own session).
+    const sessions = [session({ name: 'Maya', correct: 10, endedAt: now })];
+    const leaderboard = buildLeaderboard(sessions, now);
+
+    expect(leaderboard[0].name).toBe('Maya');
+    expect(leaderboard[0].isRobot).toBe(false);
+
+    const rival = leaderboard.find((e) => e.name === ROBOTS[0].name)!;
+    expect(rival.score).toBeLessThan(leaderboard[0].score);
+    expect(rival.score).toBeGreaterThan(leaderboard[0].score * 0.8); // "close"
+
+    // Every other robot stays at its untouched, natural (here: ~0) score.
+    for (const robot of ROBOTS.slice(1)) {
+      const entry = leaderboard.find((e) => e.name === robot.name);
+      if (entry) expect(entry.score).toBe(0);
+    }
+  });
+
+  it('never lowers the rival robot below what its own idle time already earned', () => {
+    const now = 100 * HOUR;
+    // Long idle stretch: the rival robot's natural climb alone already
+    // exceeds 92% of a modest human score, so the nudge must not reduce it.
+    const sessions = [session({ name: 'Maya', correct: 1, endedAt: now - 50 * HOUR })];
+    const naturalRivalScore = robotEntries(sessions, now).find((r) => r.name === ROBOTS[0].name)!.score;
+    const leaderboard = buildLeaderboard(sessions, now);
+    const rival = leaderboard.find((e) => e.name === ROBOTS[0].name)!;
+    expect(rival.score).toBeGreaterThanOrEqual(naturalRivalScore);
+  });
+
+  it('does not nudge any robot when no human has logged a session at all', () => {
+    const now = 3 * HOUR;
+    const natural = robotEntries([], now);
+    const leaderboard = buildLeaderboard([], now);
+    for (const robot of natural) {
+      expect(leaderboard.find((e) => e.name === robot.name)!.score).toBe(robot.score);
+    }
+  });
 });

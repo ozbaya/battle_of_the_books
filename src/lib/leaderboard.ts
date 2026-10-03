@@ -106,8 +106,31 @@ export function robotEntries(sessions: UsageSession[], now: number): Leaderboard
   }));
 }
 
+// The fastest natural climber doubles as the designated "rival" — when a
+// human is genuinely in the lead (ahead of every robot's own idle-time
+// score), it gets nudged up to just under the leader, so there's always a
+// robot visibly nipping at the top human's heels instead of the whole pack
+// trailing far behind. Capped below the leader (never at or past 100%), so
+// this nudge alone never dethrones a human — only real idle time does that.
+const RIVAL_ROBOT_NAME = ROBOTS[0].name;
+const RIVAL_TARGET_FRACTION = 0.92;
+
 /** Real players + robots, ranked together, highest score first. */
 export function buildLeaderboard(sessions: UsageSession[], now: number, limit = 10): LeaderboardEntry[] {
-  const entries = [...aggregatePlayerScores(sessions, now), ...robotEntries(sessions, now)];
-  return entries.sort((a, b) => b.score - a.score).slice(0, limit);
+  const players = aggregatePlayerScores(sessions, now);
+  const robots = robotEntries(sessions, now);
+  const combined = [...players, ...robots];
+
+  if (combined.length > 0) {
+    const topOverall = combined.reduce((best, e) => (e.score > best.score ? e : best));
+    if (!topOverall.isRobot) {
+      const rival = robots.find((r) => r.name === RIVAL_ROBOT_NAME);
+      if (rival) {
+        const target = Math.round(topOverall.score * RIVAL_TARGET_FRACTION);
+        rival.score = Math.max(rival.score, target);
+      }
+    }
+  }
+
+  return combined.sort((a, b) => b.score - a.score).slice(0, limit);
 }
