@@ -170,7 +170,10 @@ export function RealRecordingPanel({
       ) : (
         <>
           <RingProgress fraction={fraction} />
-          <span className="z-10 text-[clamp(2.5rem,10vw,4.5rem)] font-black tabular-nums">{seconds}</span>
+          <div className="z-10 flex flex-col items-center gap-1 px-3 text-center">
+            <span className="text-[clamp(0.8rem,2.6vw,1.1rem)] font-bold uppercase tracking-wide">🎙️ Say your answer — recording!</span>
+            <span className="text-[clamp(2.5rem,10vw,4.5rem)] font-black tabular-nums">{seconds}</span>
+          </div>
           <span className="absolute bottom-3 hidden text-xs font-medium opacity-80 mouse:block">Click to finish early · Esc to cancel</span>
         </>
       )}
