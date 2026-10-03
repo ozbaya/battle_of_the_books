@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { AnswerButton } from '@/components/AnswerButton';
 import { ANSWER_REVEAL_DELAY_MS, type AnswerOutcome } from '@/components/AnswerReveal';
@@ -17,6 +18,19 @@ import { SCORE } from '@/lib/game/config';
 
 const ROUND_SIZE = 10;
 const WRONG_ANSWER_REVEAL_MS = 3000;
+
+// A random celebration image on a fully-correct answer — purely for fun,
+// quiz-mode-only. Each file keeps its real intrinsic size for next/image's
+// aspect-ratio box; display size is constrained with className.
+const CELEBRATION_IMAGES: { src: string; width: number; height: number; alt: string }[] = [
+  { src: '/quiz-celebrations/gangnam-style.png', width: 320, height: 319, alt: 'Gangnam Style dance' },
+  { src: '/quiz-celebrations/67.png', width: 640, height: 640, alt: '67' },
+];
+const CELEBRATION_DISPLAY_MS = 3000;
+
+function randomCelebrationImage() {
+  return CELEBRATION_IMAGES[Math.floor(Math.random() * CELEBRATION_IMAGES.length)];
+}
 
 interface QuizPromptMeta {
   index: number;
@@ -190,6 +204,7 @@ function QuizQuestionView({
   const [gaveUp, setGaveUp] = useState(false);
   const [readyForNext, setReadyForNext] = useState(false);
   const [revealAnswer, setRevealAnswer] = useState<string | null>(null);
+  const [celebration, setCelebration] = useState<(typeof CELEBRATION_IMAGES)[number] | null>(null);
 
   async function handleShowAnswer() {
     setGaveUp(true);
@@ -202,11 +217,15 @@ function QuizQuestionView({
   }
 
   function handleOutcome(outcome: QuizAnswerResult | null) {
+    const correct = Boolean(outcome && outcome.points === SCORE.FULL);
     const needsReveal = Boolean(outcome && outcome.points < SCORE.FULL);
     setTimeout(() => {
       if (needsReveal && outcome) {
         setRevealAnswer(outcome.correctAnswer);
         setTimeout(() => setReadyForNext(true), WRONG_ANSWER_REVEAL_MS);
+      } else if (correct) {
+        setCelebration(randomCelebrationImage());
+        setTimeout(() => setReadyForNext(true), CELEBRATION_DISPLAY_MS);
       } else {
         setReadyForNext(true);
       }
@@ -269,6 +288,18 @@ function QuizQuestionView({
         <p className="text-center text-[clamp(1rem,3vw,1.35rem)] font-bold text-violet-700 dark:text-violet-300">
           The answer was <span className="underline">{revealAnswer}</span>
         </p>
+      )}
+      {celebration && (
+        <div className="flex justify-center">
+          <Image
+            src={celebration.src}
+            alt={celebration.alt}
+            width={celebration.width}
+            height={celebration.height}
+            unoptimized
+            className="h-28 w-28 animate-bounce rounded-2xl object-cover shadow-lg sm:h-36 sm:w-36"
+          />
+        </div>
       )}
       <div className="flex justify-center gap-3">
         {readyForNext && (
