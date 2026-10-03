@@ -40,8 +40,9 @@ const MODE_MULTIPLIER: Record<UsageMode, number> = {
   quiz: 1,
 };
 
-const RECENT_SESSION_BONUS = 10;
-const RECENT_WINDOW_MS = 12 * 60 * 60 * 1000;
+const DECAY_WINDOW_MS = 2 * 24 * 60 * 60 * 1000;
+// const RECENT_SESSION_BONUS = 10;
+// const RECENT_WINDOW_MS = 12 * 60 * 60 * 1000;
 
 /** Points earned by one logged round. Pure function of its own stored counts. */
 export function sessionPoints(session: UsageSession): number {
