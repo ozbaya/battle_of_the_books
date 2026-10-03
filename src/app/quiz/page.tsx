@@ -25,6 +25,7 @@ const WRONG_ANSWER_REVEAL_MS = 3000;
 const CELEBRATION_IMAGES: { src: string; width: number; height: number; alt: string }[] = [
   { src: '/quiz-celebrations/gangnam-style.png', width: 320, height: 319, alt: 'Gangnam Style dance' },
   { src: '/quiz-celebrations/67.png', width: 640, height: 640, alt: '67' },
+  { src: '/quiz-celebrations/thumbs-up-gnome.png', width: 1024, height: 1024, alt: 'Thumbs up gnome' },
 ];
 const CELEBRATION_DISPLAY_MS = 3000;
 
