@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { AnswerButton } from '@/components/AnswerButton';
@@ -37,9 +37,13 @@ const CELEBRATION_IMAGES: QuizImage[] = [
 ];
 const WRONG_ANSWER_IMAGES: QuizImage[] = [
   { src: '/quiz-wrong-answers/giraffe.png', width: 236, height: 383, alt: 'Giraffe sticking its tongue out' },
+  { src: '/quiz-wrong-answers/crying-cat.png', width: 588, height: 521, alt: 'Crying cat meme' },
+  { src: '/quiz-wrong-answers/sad-owl.png', width: 462, height: 663, alt: 'Sad wet owlet' },
 ];
 const CELEBRATION_DISPLAY_MS = 3000;
-const JUMP_DURATION_S = 1.2; // 50% slower than the original 0.8s
+// Time for one leg of the jump (all the way up, or all the way down). 1.2s
+// for a full up+down cycle, 50% slower than the original 0.8s.
+const JUMP_LEG_S = 0.6;
 
 // A sad trumpet sting on a wrong answer — purely for fun, quiz-mode-only.
 // No unlock/gesture gating like the synthesized sounds in lib/sound.ts: by
@@ -49,19 +53,12 @@ function playSadTrumpet() {
   new Audio('/quiz-sounds/sad-trumpet.mp3').play().catch(() => {});
 }
 
-interface ImageMotion {
-  image: QuizImage;
-  /** Random sideways drift (vw) for each half of the jump cycle — see the celebration-jump keyframes in globals.css. */
-  xA: number;
-  xB: number;
+function randomImage(images: QuizImage[]): QuizImage {
+  return images[Math.floor(Math.random() * images.length)];
 }
 
-function randomImageMotion(images: QuizImage[]): ImageMotion {
-  const image = images[Math.floor(Math.random() * images.length)];
-  const xA = Math.random() * 70 - 35; // -35vw..35vw
-  let xB = Math.random() * 70 - 35;
-  if (Math.abs(xB - xA) < 20) xB = xA + (xB >= xA ? 20 : -20); // keep the left/right motion visible
-  return { image, xA, xB };
+function randomJumpX(): number {
+  return Math.random() * 70 - 35; // -35vw..35vw
 }
 
 interface QuizPromptMeta {
@@ -236,8 +233,8 @@ function QuizQuestionView({
   const [gaveUp, setGaveUp] = useState(false);
   const [readyForNext, setReadyForNext] = useState(false);
   const [revealAnswer, setRevealAnswer] = useState<string | null>(null);
-  const [celebration, setCelebration] = useState<ImageMotion | null>(null);
-  const [wrongImage, setWrongImage] = useState<ImageMotion | null>(null);
+  const [celebration, setCelebration] = useState<QuizImage | null>(null);
+  const [wrongImage, setWrongImage] = useState<QuizImage | null>(null);
 
   async function handleShowAnswer() {
     setGaveUp(true);
@@ -257,11 +254,11 @@ function QuizQuestionView({
         setRevealAnswer(outcome.correctAnswer);
         if (outcome.points === SCORE.WRONG) {
           playSadTrumpet();
-          setWrongImage(randomImageMotion(WRONG_ANSWER_IMAGES));
+          setWrongImage(randomImage(WRONG_ANSWER_IMAGES));
         }
         setTimeout(() => setReadyForNext(true), WRONG_ANSWER_REVEAL_MS);
       } else if (correct) {
-        setCelebration(randomImageMotion(CELEBRATION_IMAGES));
+        setCelebration(randomImage(CELEBRATION_IMAGES));
         setTimeout(() => setReadyForNext(true), CELEBRATION_DISPLAY_MS);
       } else {
         setReadyForNext(true);
@@ -326,11 +323,11 @@ function QuizQuestionView({
           The answer was <span className="underline">{revealAnswer}</span>
         </p>
       )}
-      {celebration && <JumpingImage motion={celebration} bottomClearance="calc(5rem + env(safe-area-inset-bottom))" />}
+      {celebration && <JumpingImage image={celebration} bottomClearance="calc(5rem + env(safe-area-inset-bottom))" />}
       {wrongImage && (
         // Wrong answers also show the reveal text above the button row, so this
         // one needs extra bottom clearance to jump above *that*, not just the button.
-        <JumpingImage motion={wrongImage} bottomClearance="calc(9rem + env(safe-area-inset-bottom))" />
+        <JumpingImage image={wrongImage} bottomClearance="calc(9rem + env(safe-area-inset-bottom))" />
       )}
       <div className="flex justify-center gap-3">
         {readyForNext && (
@@ -381,32 +378,45 @@ function ResultsView({ results, onPlayAgain }: { results: RoundResult[]; onPlayA
 }
 
 /**
- * A full-page, clipped overlay the image jumps around inside (celebration-jump
- * in globals.css) — `bottomClearance` is how far up from the bottom of the
- * screen the overlay stops, so the jump never overlaps whatever's below it
- * (the Next question button for a correct answer; that button plus the
- * reveal text for a wrong one).
+ * A full-page, clipped overlay the image jumps around inside —
+ * `bottomClearance` is how far up from the bottom of the screen the overlay
+ * stops, so the jump never overlaps whatever's below it (the Next question
+ * button for a correct answer; that button plus the reveal text for a
+ * wrong one).
+ *
+ * The vertical motion alternates up/down every JUMP_LEG_S seconds; every
+ * time it switches direction (each time it's about to go down, or about to
+ * go up), a fresh random horizontal target is picked too, so the sideways
+ * drift isn't just a fixed back-and-forth between two points.
  */
-function JumpingImage({ motion, bottomClearance }: { motion: ImageMotion; bottomClearance: string }) {
+function JumpingImage({ image, bottomClearance }: { image: QuizImage; bottomClearance: string }) {
+  const [pos, setPos] = useState(() => ({ x: randomJumpX(), y: 0 }));
+  const goingDown = useRef(true);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      goingDown.current = !goingDown.current;
+      setPos({ x: randomJumpX(), y: goingDown.current ? 50 : 0 });
+    }, JUMP_LEG_S * 1000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <div
       className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center overflow-hidden"
       style={{ bottom: bottomClearance }}
     >
       <Image
-        src={motion.image.src}
-        alt={motion.image.alt}
-        width={motion.image.width}
-        height={motion.image.height}
+        src={image.src}
+        alt={image.alt}
+        width={image.width}
+        height={image.height}
         unoptimized
         className="h-56 w-56 rounded-2xl object-cover shadow-xl sm:h-72 sm:w-72"
-        style={
-          {
-            animation: `celebration-jump ${JUMP_DURATION_S}s ease-in-out infinite`,
-            '--jump-x-a': `${motion.xA}vw`,
-            '--jump-x-b': `${motion.xB}vw`,
-          } as React.CSSProperties
-        }
+        style={{
+          transition: `transform ${JUMP_LEG_S}s ease-in-out`,
+          transform: `translate(${pos.x}vw, ${pos.y}vh)`,
+        }}
       />
     </div>
   );

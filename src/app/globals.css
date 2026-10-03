@@ -28,20 +28,3 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
-
-/* Quiz preview: a big, page-spanning jump for the correct-answer celebration
-   image (src/app/quiz/page.tsx). The animated element sits inside a clipped,
-   fixed full-page container that stops above the "Next question" button, so
-   the jump never overlaps it regardless of how big the amplitude gets.
-   --jump-x-a/--jump-x-b are set per-occurrence (random vw values) via inline
-   style, so the sideways drift differs — and differs in direction — every
-   time a celebration image appears. */
-@keyframes celebration-jump {
-  0%,
-  100% {
-    transform: translate(var(--jump-x-a, 0), 0);
-  }
-  50% {
-    transform: translate(var(--jump-x-b, 0), 50vh);
-  }
-}
