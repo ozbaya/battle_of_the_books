@@ -303,16 +303,16 @@ function PracticeQuestionView({
         {!tapped && !gaveUp && (
           <>
             <button
-              onClick={onNext}
-              className="rounded-xl border border-neutral-300 px-6 py-3 text-lg font-bold text-neutral-600 hover:bg-black/5 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-white/5"
-            >
-              {isLast ? 'Skip to results →' : 'Skip this question →'}
-            </button>
-            <button
               onClick={handleShowAnswer}
               className="rounded-xl border border-neutral-300 px-6 py-3 text-lg font-bold text-neutral-600 hover:bg-black/5 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-white/5"
             >
               Show me the answer
+            </button>
+            <button
+              onClick={onNext}
+              className="rounded-xl border border-neutral-300 px-6 py-3 text-lg font-bold text-neutral-600 hover:bg-black/5 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-white/5"
+            >
+              {isLast ? 'Skip to results →' : 'Skip this question →'}
             </button>
           </>
         )}
