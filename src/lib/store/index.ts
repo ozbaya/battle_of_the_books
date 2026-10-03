@@ -1,7 +1,7 @@
 import { CAS_MAX_RETRIES } from '../game/config';
 import { advance } from '../game/engine';
 import type { GameState, Question } from '../game/types';
-import { memoryStore } from './memory';
+import { listAllGames, memoryStore } from './memory';
 import { redisStore } from './redis';
 import type { Store } from './types';
 
@@ -37,6 +37,18 @@ export async function insertGame(code: string, state: GameState): Promise<void> 
 
 export async function getGame(code: string): Promise<GameState | null> {
   return pickStore().load(code);
+}
+
+/**
+ * Best-effort "recent games" list for /admin. Only the memory store can list
+ * everything cheaply; Redis needs its own index (see the TODO in redis.ts),
+ * out of scope for this pass since STORE=memory is the default.
+ */
+export async function listRecentGames(): Promise<GameState[]> {
+  if (pickStore() !== memoryStore) return [];
+  return listAllGames()
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, 20);
 }
 
 /**
