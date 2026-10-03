@@ -47,23 +47,54 @@ const CELEBRATION_DISPLAY_MS = 3000;
 const JUMP_LEG_S = 0.9;
 
 // A sad trumpet sting on a wrong answer, a fanfare on a correct one —
-// purely for fun, quiz-mode-only. No unlock/gesture gating like the
-// synthesized sounds in lib/sound.ts: by the time either fires, the player
-// has already tapped at least twice (Start the quiz, then ANSWER/Submit),
-// so autoplay restrictions don't apply.
-function playSadTrumpet() {
-  new Audio('/quiz-sounds/sad-trumpet.mp3').play().catch(() => {});
+// purely for fun, quiz-mode-only. Unlike the game's synthesized tones
+// (lib/sound.ts), these are real <audio> elements, and by the time a sound
+// is due (ANSWER_REVEAL_DELAY_MS after the outcome resolves — itself after
+// a transcribe/judge round trip for real audio) we're several async hops
+// and seconds away from the tap that triggered it. Strict autoplay policies
+// (notably iOS Safari) can block a *new* Audio().play() called that late,
+// even though plenty of earlier taps happened on the page. So instead we
+// create and "prime" these elements once, synchronously inside the very
+// first tap of the session ("Start the quiz") — playing + immediately
+// pausing them registers the gesture against these specific elements —
+// and just replay the same already-unlocked elements every time after.
+interface SoundBoard {
+  fanfare: HTMLAudioElement;
+  trumpet: HTMLAudioElement;
 }
-function playFanfare() {
-  new Audio('/quiz-sounds/fanfare.mp3').play().catch(() => {});
+
+function primeSoundBoard(): SoundBoard {
+  const fanfare = new Audio('/quiz-sounds/fanfare.mp3');
+  const trumpet = new Audio('/quiz-sounds/sad-trumpet.mp3');
+  for (const el of [fanfare, trumpet]) {
+    el.play()
+      .then(() => {
+        el.pause();
+        el.currentTime = 0;
+      })
+      .catch(() => {});
+  }
+  return { fanfare, trumpet };
+}
+
+function playSound(el: HTMLAudioElement | undefined) {
+  if (!el) return;
+  el.currentTime = 0;
+  el.play().catch(() => {});
 }
 
 function randomImage(images: QuizImage[]): QuizImage {
   return images[Math.floor(Math.random() * images.length)];
 }
 
+// Per-leg horizontal travel range. Randomizing this *per leg* (instead of
+// once per occurrence) meant each leg could swing up to 70vw sideways on
+// top of the 50vh vertical jump — a much longer hypotenuse to cover in the
+// same JUMP_LEG_S, which reads as "faster" even after slowing the timing
+// down, because speed is distance/time and the distance went up too.
+// Shrinking the range (not just the duration) is what actually fixes that.
 function randomJumpX(): number {
-  return Math.random() * 70 - 35; // -35vw..35vw
+  return Math.random() * 30 - 15; // -15vw..15vw
 }
 
 interface QuizPromptMeta {
@@ -95,6 +126,7 @@ export default function QuizPage() {
   const [results, setResults] = useState<RoundResult[]>([]);
   const [starting, setStarting] = useState(false);
   const mic = useMicCheck();
+  const [sounds, setSounds] = useState<SoundBoard | null>(null);
 
   useEffect(() => {
     fetch('/api/quiz/questions')
@@ -108,6 +140,9 @@ export default function QuizPage() {
 
   async function startRound() {
     if (!prompts || prompts.length === 0) return;
+    // Prime both sound effects synchronously, inside this tap, before any
+    // `await` — see primeSoundBoard()'s comment for why.
+    if (!sounds) setSounds(primeSoundBoard());
     setStarting(true);
     try {
       if (!mockAi) await mic.run();
@@ -202,6 +237,7 @@ export default function QuizPage() {
       totalQuestions={order.length}
       promptText={promptText}
       mockAi={mockAi}
+      sounds={sounds}
       onSubmitMock={(text) => submitMock(questionIndex, text)}
       onSubmitReal={(blob, filename) => submitReal(questionIndex, blob, filename)}
       onNext={next}
@@ -217,6 +253,7 @@ function QuizQuestionView({
   totalQuestions,
   promptText,
   mockAi,
+  sounds,
   onSubmitMock,
   onSubmitReal,
   onNext,
@@ -228,6 +265,7 @@ function QuizQuestionView({
   totalQuestions: number;
   promptText: string;
   mockAi: boolean;
+  sounds: SoundBoard | null;
   onSubmitMock: (text: string) => Promise<QuizAnswerResult | null>;
   onSubmitReal: (blob: Blob, filename: string) => Promise<QuizAnswerResult | null>;
   onNext: () => void;
@@ -258,12 +296,12 @@ function QuizQuestionView({
       if (needsReveal && outcome) {
         setRevealAnswer(outcome.correctAnswer);
         if (outcome.points === SCORE.WRONG) {
-          playSadTrumpet();
+          playSound(sounds?.trumpet);
           setWrongImage(randomImage(WRONG_ANSWER_IMAGES));
         }
         setTimeout(() => setReadyForNext(true), WRONG_ANSWER_REVEAL_MS);
       } else if (correct) {
-        playFanfare();
+        playSound(sounds?.fanfare);
         setCelebration(randomImage(CELEBRATION_IMAGES));
         setTimeout(() => setReadyForNext(true), CELEBRATION_DISPLAY_MS);
       } else {
