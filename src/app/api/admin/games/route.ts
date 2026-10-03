@@ -5,7 +5,7 @@ import { DEFAULT_NUM_QUESTIONS } from '@/lib/game/config';
 import { createGame } from '@/lib/game/engine';
 import { generateGameCode } from '@/lib/game-code';
 import { getQuestions } from '@/lib/questions';
-import { getGame, insertGame, listRecentGames } from '@/lib/store';
+import { getGame, getStoreDiagnostics, insertGame, listRecentGames } from '@/lib/store';
 
 const createSchema = z.object({
   teamName: z.string().trim().min(1).max(60),
@@ -65,5 +65,6 @@ export async function GET(request: NextRequest) {
       phase: g.phase.name,
       createdAt: g.createdAt,
     })),
+    store: getStoreDiagnostics(),
   });
 }

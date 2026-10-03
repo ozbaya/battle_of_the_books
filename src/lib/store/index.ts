@@ -31,6 +31,24 @@ function pickStore(): Store {
   return redisStore;
 }
 
+/**
+ * Surfaces which store is actually active and why — admin-only diagnostic
+ * for the "it works locally but not on Vercel" class of bug, where the
+ * silent fallback to the in-memory store (wrong/missing env var names, or
+ * STORE=memory left set in production) is otherwise invisible.
+ */
+export function getStoreDiagnostics(): {
+  active: 'memory' | 'redis';
+  redisEnvDetected: boolean;
+  storeEnvOverride: string | undefined;
+} {
+  return {
+    active: pickStore() === memoryStore ? 'memory' : 'redis',
+    redisEnvDetected: hasRedisEnv(),
+    storeEnvOverride: process.env.STORE,
+  };
+}
+
 export async function insertGame(code: string, state: GameState): Promise<void> {
   await pickStore().create(code, state);
 }

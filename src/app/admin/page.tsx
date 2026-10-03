@@ -12,6 +12,12 @@ interface GameSummary {
   createdAt: number;
 }
 
+interface StoreDiagnostics {
+  active: 'memory' | 'redis';
+  redisEnvDetected: boolean;
+  storeEnvOverride: string | undefined;
+}
+
 const BUCKETS = [
   { bucket: 'full', label: 'Full (+2)', points: 2 },
   { bucket: 'titleOnly', label: 'Title (+1)', points: 1 },
@@ -22,6 +28,7 @@ const BUCKETS = [
 export default function AdminPage() {
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [games, setGames] = useState<GameSummary[]>([]);
+  const [storeInfo, setStoreInfo] = useState<StoreDiagnostics | null>(null);
   const [selectedCode, setSelectedCode] = useState('');
 
   const refreshGames = async () => {
@@ -33,6 +40,7 @@ export default function AdminPage() {
     setLoggedIn(true);
     const body = await res.json();
     setGames(body.games ?? []);
+    setStoreInfo(body.store ?? null);
   };
 
   useEffect(() => {
@@ -46,7 +54,10 @@ export default function AdminPage() {
       }
       setLoggedIn(true);
       const body = await res.json();
-      if (!cancelled) setGames(body.games ?? []);
+      if (!cancelled) {
+        setGames(body.games ?? []);
+        setStoreInfo(body.store ?? null);
+      }
     })();
     return () => {
       cancelled = true;
@@ -59,10 +70,38 @@ export default function AdminPage() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-3xl flex-col gap-8 p-6">
       <h1 className="text-3xl font-black">Battle of the Books — Admin</h1>
+      {storeInfo && <StoreBadge info={storeInfo} />}
       <CreateGameForm onCreated={(code) => { setSelectedCode(code); refreshGames(); }} />
       <RecentGames games={games} onSelect={setSelectedCode} onRefresh={refreshGames} />
       {selectedCode && <ManageGame code={selectedCode} />}
     </main>
+  );
+}
+
+function StoreBadge({ info }: { info: StoreDiagnostics }) {
+  if (info.active === 'redis') {
+    return (
+      <p className="rounded-lg bg-emerald-100 px-3 py-2 text-sm text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
+        ✅ Using Redis — game state is shared across server instances.
+      </p>
+    );
+  }
+  return (
+    <div className="rounded-lg bg-rose-100 px-3 py-2 text-sm text-rose-900 dark:bg-rose-950 dark:text-rose-200">
+      <p className="font-bold">⚠️ Using the in-memory store, not Redis.</p>
+      <p>
+        On Vercel this means different requests can hit different server instances with different
+        game state — exactly the &ldquo;Game not found&rdquo; symptom. Redis env vars detected:{' '}
+        <strong>{info.redisEnvDetected ? 'yes' : 'no'}</strong>
+        {info.storeEnvOverride && (
+          <>
+            {' '}
+            · <code>STORE={info.storeEnvOverride}</code> is forcing memory mode
+          </>
+        )}
+        .
+      </p>
+    </div>
   );
 }
 
