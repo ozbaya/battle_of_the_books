@@ -21,6 +21,24 @@ export default function HomePage() {
         <p className="mt-1 text-lg opacity-70">Pick your team below to join the game!</p>
       </div>
 
+      <details className="w-full max-w-md rounded-2xl bg-black/5 text-left open:pb-5 dark:bg-white/5">
+        <summary className="cursor-pointer select-none px-6 py-4 font-bold">❓ How to play</summary>
+        <div className="flex flex-col gap-3 px-6 text-sm opacity-80">
+          <div>
+            <p className="font-bold">🏆 Team game</p>
+            <p>Join an open game below on your own phone, as part of your team. Everyone answers together, racing against a team of robots 🤖.</p>
+          </div>
+          <div>
+            <p className="font-bold">🎯 Practice mode</p>
+            <p>No team, no robots, no waiting for a host — just you working through questions on your own, whenever you want.</p>
+          </div>
+          <div>
+            <p className="font-bold">🎤 Answering a question</p>
+            <p>When a question shows up, press the big <strong>ANSWER</strong> button, then say your answer out loud — you&apos;ve got 5 seconds to record before it gets sent in.</p>
+          </div>
+        </div>
+      </details>
+
       <div className="flex w-full max-w-md flex-col gap-3">
         {loading && <p className="opacity-60">Loading games…</p>}
         {!loading && games.length === 0 && (
