@@ -17,22 +17,41 @@ function key(code: string): string {
 // whose load() comes back null, and forgetCode() lazily prunes it here too.
 const INDEX_KEY = 'games:index';
 
-function readEnv(primary: string, fallback: string): { url: string; token: string } {
-  const url = process.env[primary + '_URL'] ?? process.env[fallback + '_URL'];
-  const token = process.env[primary + '_TOKEN'] ?? process.env[fallback + '_TOKEN'];
-  if (!url || !token) {
-    throw new Error(
-      `Redis store selected but neither ${primary}_URL/${primary}_TOKEN nor ${fallback}_URL/${fallback}_TOKEN are set`
-    );
+// Vercel Storage integrations (e.g. connecting an Upstash Redis database
+// from the Marketplace) prefix every injected env var with whatever name you
+// gave the database — e.g. naming it "bob" yields BOB_KV_REST_API_URL /
+// BOB_KV_REST_API_TOKEN, not the unprefixed names. Rather than guess a
+// prefix, scan for any matching URL/TOKEN pair with a shared prefix.
+const URL_SUFFIXES = ['KV_REST_API_URL', 'UPSTASH_REDIS_REST_URL'];
+
+export function findRedisCredentials(): { url: string; token: string } | null {
+  const env = process.env;
+  for (const suffix of URL_SUFFIXES) {
+    // Unprefixed first (the common case when connecting directly to Upstash).
+    const tokenSuffix = suffix.replace('_URL', '_TOKEN');
+    if (env[suffix] && env[tokenSuffix]) {
+      return { url: env[suffix]!, token: env[tokenSuffix]! };
+    }
+    for (const key of Object.keys(env)) {
+      if (key === suffix || !key.endsWith(`_${suffix}`)) continue;
+      const prefix = key.slice(0, -suffix.length - 1);
+      const tokenKey = `${prefix}_${tokenSuffix}`;
+      if (env[key] && env[tokenKey]) {
+        return { url: env[key]!, token: env[tokenKey]! };
+      }
+    }
   }
-  return { url, token };
+  return null;
 }
 
 let client: Redis | null = null;
 function getClient(): Redis {
   if (!client) {
-    const { url, token } = readEnv('UPSTASH_REDIS_REST', 'KV_REST_API');
-    client = new Redis({ url, token });
+    const credentials = findRedisCredentials();
+    if (!credentials) {
+      throw new Error('Redis store selected but no *_KV_REST_API_URL/_TOKEN or *_UPSTASH_REDIS_REST_URL/_TOKEN env vars were found');
+    }
+    client = new Redis(credentials);
   }
   return client;
 }

@@ -2,7 +2,7 @@ import { CAS_MAX_RETRIES } from '../game/config';
 import { advance } from '../game/engine';
 import type { GameState, Question } from '../game/types';
 import { memoryStore } from './memory';
-import { redisStore } from './redis';
+import { findRedisCredentials, redisStore } from './redis';
 import type { Store } from './types';
 
 export class CasConflictError extends Error {
@@ -19,15 +19,8 @@ export class GameNotFoundError extends Error {
   }
 }
 
-function hasRedisEnv(): boolean {
-  return Boolean(
-    (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) ||
-      (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
-  );
-}
-
 function pickStore(): Store {
-  if (process.env.STORE === 'memory' || !hasRedisEnv()) return memoryStore;
+  if (process.env.STORE === 'memory' || !findRedisCredentials()) return memoryStore;
   return redisStore;
 }
 
@@ -44,7 +37,7 @@ export function getStoreDiagnostics(): {
 } {
   return {
     active: pickStore() === memoryStore ? 'memory' : 'redis',
-    redisEnvDetected: hasRedisEnv(),
+    redisEnvDetected: findRedisCredentials() !== null,
     storeEnvOverride: process.env.STORE,
   };
 }
