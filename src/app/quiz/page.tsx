@@ -19,16 +19,27 @@ import { SCORE } from '@/lib/game/config';
 const ROUND_SIZE = 10;
 const WRONG_ANSWER_REVEAL_MS = 3000;
 
-// A random celebration image on a fully-correct answer — purely for fun,
-// quiz-mode-only. Each file keeps its real intrinsic size for next/image's
-// aspect-ratio box; display size is constrained with className.
-const CELEBRATION_IMAGES: { src: string; width: number; height: number; alt: string }[] = [
+// A random image that jumps around the page on a fully-correct or a wrong
+// answer — purely for fun, quiz-mode-only. Each file keeps its real
+// intrinsic size for next/image's aspect-ratio box; display size is
+// constrained with className.
+interface QuizImage {
+  src: string;
+  width: number;
+  height: number;
+  alt: string;
+}
+
+const CELEBRATION_IMAGES: QuizImage[] = [
   { src: '/quiz-celebrations/gangnam-style.png', width: 320, height: 319, alt: 'Gangnam Style dance' },
   { src: '/quiz-celebrations/67.png', width: 640, height: 640, alt: '67' },
   { src: '/quiz-celebrations/thumbs-up-gnome.png', width: 1024, height: 1024, alt: 'Thumbs up gnome' },
 ];
+const WRONG_ANSWER_IMAGES: QuizImage[] = [
+  { src: '/quiz-wrong-answers/giraffe.png', width: 236, height: 383, alt: 'Giraffe sticking its tongue out' },
+];
 const CELEBRATION_DISPLAY_MS = 3000;
-const CELEBRATION_JUMP_DURATION_S = 1.2; // 50% slower than the original 0.8s
+const JUMP_DURATION_S = 1.2; // 50% slower than the original 0.8s
 
 // A sad trumpet sting on a wrong answer — purely for fun, quiz-mode-only.
 // No unlock/gesture gating like the synthesized sounds in lib/sound.ts: by
@@ -38,15 +49,15 @@ function playSadTrumpet() {
   new Audio('/quiz-sounds/sad-trumpet.mp3').play().catch(() => {});
 }
 
-interface Celebration {
-  image: (typeof CELEBRATION_IMAGES)[number];
+interface ImageMotion {
+  image: QuizImage;
   /** Random sideways drift (vw) for each half of the jump cycle — see the celebration-jump keyframes in globals.css. */
   xA: number;
   xB: number;
 }
 
-function randomCelebration(): Celebration {
-  const image = CELEBRATION_IMAGES[Math.floor(Math.random() * CELEBRATION_IMAGES.length)];
+function randomImageMotion(images: QuizImage[]): ImageMotion {
+  const image = images[Math.floor(Math.random() * images.length)];
   const xA = Math.random() * 70 - 35; // -35vw..35vw
   let xB = Math.random() * 70 - 35;
   if (Math.abs(xB - xA) < 20) xB = xA + (xB >= xA ? 20 : -20); // keep the left/right motion visible
@@ -225,7 +236,8 @@ function QuizQuestionView({
   const [gaveUp, setGaveUp] = useState(false);
   const [readyForNext, setReadyForNext] = useState(false);
   const [revealAnswer, setRevealAnswer] = useState<string | null>(null);
-  const [celebration, setCelebration] = useState<Celebration | null>(null);
+  const [celebration, setCelebration] = useState<ImageMotion | null>(null);
+  const [wrongImage, setWrongImage] = useState<ImageMotion | null>(null);
 
   async function handleShowAnswer() {
     setGaveUp(true);
@@ -243,10 +255,13 @@ function QuizQuestionView({
     setTimeout(() => {
       if (needsReveal && outcome) {
         setRevealAnswer(outcome.correctAnswer);
-        if (outcome.points === SCORE.WRONG) playSadTrumpet();
+        if (outcome.points === SCORE.WRONG) {
+          playSadTrumpet();
+          setWrongImage(randomImageMotion(WRONG_ANSWER_IMAGES));
+        }
         setTimeout(() => setReadyForNext(true), WRONG_ANSWER_REVEAL_MS);
       } else if (correct) {
-        setCelebration(randomCelebration());
+        setCelebration(randomImageMotion(CELEBRATION_IMAGES));
         setTimeout(() => setReadyForNext(true), CELEBRATION_DISPLAY_MS);
       } else {
         setReadyForNext(true);
@@ -311,27 +326,11 @@ function QuizQuestionView({
           The answer was <span className="underline">{revealAnswer}</span>
         </p>
       )}
-      {celebration && (
-        <div
-          className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center overflow-hidden"
-          style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
-        >
-          <Image
-            src={celebration.image.src}
-            alt={celebration.image.alt}
-            width={celebration.image.width}
-            height={celebration.image.height}
-            unoptimized
-            className="h-56 w-56 rounded-2xl object-cover shadow-xl sm:h-72 sm:w-72"
-            style={
-              {
-                animation: `celebration-jump ${CELEBRATION_JUMP_DURATION_S}s ease-in-out infinite`,
-                '--jump-x-a': `${celebration.xA}vw`,
-                '--jump-x-b': `${celebration.xB}vw`,
-              } as React.CSSProperties
-            }
-          />
-        </div>
+      {celebration && <JumpingImage motion={celebration} bottomClearance="calc(5rem + env(safe-area-inset-bottom))" />}
+      {wrongImage && (
+        // Wrong answers also show the reveal text above the button row, so this
+        // one needs extra bottom clearance to jump above *that*, not just the button.
+        <JumpingImage motion={wrongImage} bottomClearance="calc(9rem + env(safe-area-inset-bottom))" />
       )}
       <div className="flex justify-center gap-3">
         {readyForNext && (
@@ -378,6 +377,38 @@ function ResultsView({ results, onPlayAgain }: { results: RoundResult[]; onPlayA
         Back home
       </Link>
     </Centered>
+  );
+}
+
+/**
+ * A full-page, clipped overlay the image jumps around inside (celebration-jump
+ * in globals.css) — `bottomClearance` is how far up from the bottom of the
+ * screen the overlay stops, so the jump never overlaps whatever's below it
+ * (the Next question button for a correct answer; that button plus the
+ * reveal text for a wrong one).
+ */
+function JumpingImage({ motion, bottomClearance }: { motion: ImageMotion; bottomClearance: string }) {
+  return (
+    <div
+      className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center overflow-hidden"
+      style={{ bottom: bottomClearance }}
+    >
+      <Image
+        src={motion.image.src}
+        alt={motion.image.alt}
+        width={motion.image.width}
+        height={motion.image.height}
+        unoptimized
+        className="h-56 w-56 rounded-2xl object-cover shadow-xl sm:h-72 sm:w-72"
+        style={
+          {
+            animation: `celebration-jump ${JUMP_DURATION_S}s ease-in-out infinite`,
+            '--jump-x-a': `${motion.xA}vw`,
+            '--jump-x-b': `${motion.xB}vw`,
+          } as React.CSSProperties
+        }
+      />
+    </div>
   );
 }
 
