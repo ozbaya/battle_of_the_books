@@ -116,7 +116,7 @@ export default function PracticePage() {
     fetch('/api/usage/log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'practice', name, totalQuestions: order.length, correct, titleOnly, wrong, noAnswer, score }),
+      body: JSON.stringify({ mode: 'practice', name, difficulty, totalQuestions: order.length, correct, titleOnly, wrong, noAnswer, score }),
     }).catch(() => {});
   }
 

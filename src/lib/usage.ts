@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { QuestionSet } from './questions';
 
 /**
  * A single completed (or early-finished) solo round, logged for the admin
@@ -19,6 +20,8 @@ export interface UsageSession {
   wrong: number;
   noAnswer: number;
   score: number;
+  /** Which question set the round drew from — feeds the home page leaderboard's difficulty weighting. Quiz mode (no Hard option) always logs 'standard'. Optional/defaults to 'standard' for sessions logged before this field existed. */
+  difficulty?: QuestionSet;
 }
 
 // Bounds generous enough for any real round/game, tight enough to reject
@@ -26,6 +29,7 @@ export interface UsageSession {
 export const logUsageBodySchema = z.object({
   mode: z.enum(['practice', 'quiz']),
   name: z.string().trim().max(60).optional(),
+  difficulty: z.enum(['standard', 'hard']).optional(),
   totalQuestions: z.number().int().min(0).max(1000),
   correct: z.number().int().min(0).max(1000),
   titleOnly: z.number().int().min(0).max(1000),

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useActiveGames } from '@/lib/hooks/useActiveGames';
+import { useLeaderboard } from '@/lib/hooks/useLeaderboard';
 
 const PHASE_LABEL: Record<string, string> = {
   LOBBY: 'Waiting to start',
@@ -91,9 +92,49 @@ export default function HomePage() {
         </span>
       </Link>
 
+      <LeaderboardSection />
+
       <Link href="/admin" className="text-sm text-neutral-500 underline hover:text-neutral-700 dark:hover:text-neutral-300">
         Parent/host admin
       </Link>
     </main>
+  );
+}
+
+function LeaderboardSection() {
+  const { entries, loading } = useLeaderboard();
+
+  return (
+    <section className="w-full max-w-md rounded-2xl bg-black/5 p-5 text-left dark:bg-white/5">
+      <h2 className="mb-3 text-center text-xl font-black">🏆 Leaderboard</h2>
+      {loading && <p className="text-center opacity-60">Loading…</p>}
+      {!loading && entries.length === 0 && <p className="text-center opacity-60">No scores yet — be the first!</p>}
+      {!loading && entries.length > 0 && (
+        <ol className="flex flex-col gap-1">
+          {entries.map((e, i) => (
+            <li
+              key={e.name}
+              className={`flex items-center justify-between rounded-lg px-3 py-2 ${
+                e.isRobot ? 'bg-rose-500/10' : 'bg-white dark:bg-neutral-900'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <span className="w-5 text-right font-bold opacity-60">{i + 1}.</span>
+                <span className="font-semibold">{e.name}</span>
+                {e.isRobot && (
+                  <span className="rounded-full bg-rose-500/20 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-rose-700 dark:text-rose-300">
+                    Robot
+                  </span>
+                )}
+              </span>
+              <span className="font-black tabular-nums">{e.score}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+      <p className="mt-3 text-center text-xs opacity-60">
+        🤖 The robots climb when nobody&apos;s practiced in a while — keep your spot!
+      </p>
+    </section>
   );
 }

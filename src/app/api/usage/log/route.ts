@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
     id: nanoid(),
     mode: parsed.data.mode,
     name,
+    difficulty: parsed.data.difficulty ?? 'standard',
     endedAt: Date.now(),
     totalQuestions: parsed.data.totalQuestions,
     correct: parsed.data.correct,

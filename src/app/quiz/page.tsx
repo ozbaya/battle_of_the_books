@@ -186,7 +186,7 @@ export default function QuizPage() {
     fetch('/api/usage/log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'quiz', name, totalQuestions: order.length, correct, titleOnly: 0, wrong, noAnswer, score }),
+      body: JSON.stringify({ mode: 'quiz', name, difficulty: 'standard', totalQuestions: order.length, correct, titleOnly: 0, wrong, noAnswer, score }),
     }).catch(() => {});
   }
 
