@@ -52,6 +52,17 @@ export async function listRecentGames(): Promise<GameState[]> {
 }
 
 /**
+ * Public (unauthenticated) list for the home page: joinable games, i.e. not
+ * yet finished. Same memory-store-only limitation as listRecentGames.
+ */
+export async function listActiveGames(): Promise<GameState[]> {
+  if (pickStore() !== memoryStore) return [];
+  return listAllGames()
+    .filter((g) => g.phase.name !== 'GAME_OVER')
+    .sort((a, b) => b.createdAt - a.createdAt);
+}
+
+/**
  * load -> advance -> act -> CAS-save, retrying on conflict. Used by every
  * route, including the read-only /state poll (whose "action" is the identity
  * function) — this is how lazy time-based transitions actually get persisted
