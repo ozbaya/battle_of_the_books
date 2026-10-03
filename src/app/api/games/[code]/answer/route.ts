@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { judgeAnswer } from '@/lib/ai/judge';
-import { transcribeAnswer } from '@/lib/ai/transcribe';
+import { buildTranscribePrompt, transcribeAnswer } from '@/lib/ai/transcribe';
 import { applyJudgment, getCurrentQuestion, toPublicGameState } from '@/lib/game/engine';
-import type { Question } from '@/lib/game/types';
 import { getQuestions } from '@/lib/questions';
 import { GameNotFoundError, updateGame } from '@/lib/store';
 
@@ -11,12 +10,6 @@ export const runtime = 'nodejs';
 export const maxDuration = 30;
 
 const mockBodySchema = z.object({ playerId: z.string().min(1), text: z.string() });
-
-function transcribePrompt(questions: Question[]): string {
-  // Lists every title + author in the set to bias spelling, without singling
-  // out which one is correct for the question currently being answered.
-  return questions.map((q) => `${q.title} by ${q.author}`).join('; ');
-}
 
 interface Judged {
   playerId: string;
@@ -81,7 +74,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
       let transcript: string;
       try {
-        transcript = await transcribeAnswer({ file: audio, filename, prompt: transcribePrompt(questions) });
+        transcript = await transcribeAnswer({ file: audio, filename, prompt: buildTranscribePrompt(questions) });
       } catch {
         // Don't stall the game on a transcription failure: needs manual review, 0 for now.
         judged = { playerId, transcript: '', titleCorrect: false, authorCorrect: false, recorded: false, needsReview: true };

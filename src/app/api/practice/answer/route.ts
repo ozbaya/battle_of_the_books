@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { judgeAnswer } from '@/lib/ai/judge';
-import { transcribeAnswer } from '@/lib/ai/transcribe';
+import { buildTranscribePrompt, transcribeAnswer } from '@/lib/ai/transcribe';
 import { scoreAnswer } from '@/lib/game/scoring';
-import type { Question } from '@/lib/game/types';
 import { getQuestions } from '@/lib/questions';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
 
 const mockBodySchema = z.object({ index: z.number().int().min(0), text: z.string() });
-
-function transcribePrompt(questions: Question[]): string {
-  return questions.map((q) => `${q.title} by ${q.author}`).join('; ');
-}
 
 interface AnswerResponse {
   transcript: string;
@@ -70,7 +65,7 @@ export async function POST(request: NextRequest) {
     const filename = audio instanceof File && audio.name ? audio.name : 'answer.webm';
 
     try {
-      transcript = await transcribeAnswer({ file: audio, filename, prompt: transcribePrompt(questions) });
+      transcript = await transcribeAnswer({ file: audio, filename, prompt: buildTranscribePrompt(questions) });
     } catch {
       return NextResponse.json({
         transcript: '',
