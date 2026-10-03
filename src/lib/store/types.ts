@@ -1,4 +1,5 @@
 import type { GameState } from '../game/types';
+import type { UsageSession } from '../usage';
 
 export interface Store {
   load(code: string): Promise<GameState | null>;
@@ -15,4 +16,8 @@ export interface Store {
   forgetCode(code: string): Promise<void>;
   /** Permanently removes a game (the admin's "delete dead game" action) — the key and its index entry. */
   delete(code: string): Promise<void>;
+  /** Appends one completed session to the admin "usage" log (capped, most-recent-first). */
+  logUsage(session: UsageSession): Promise<void>;
+  /** Most-recently-logged sessions first. */
+  listUsage(limit: number): Promise<UsageSession[]>;
 }

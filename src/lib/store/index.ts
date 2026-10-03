@@ -1,6 +1,7 @@
 import { CAS_MAX_RETRIES } from '../game/config';
 import { advance } from '../game/engine';
 import type { GameState, Question } from '../game/types';
+import type { UsageSession } from '../usage';
 import { memoryStore } from './memory';
 import { findRedisCredentials, redisStore } from './redis';
 import type { Store } from './types';
@@ -95,6 +96,16 @@ export async function listRecentGames(): Promise<GameState[]> {
 export async function listActiveGames(): Promise<GameState[]> {
   const games = await loadIndexedGames(GAME_LIST_CANDIDATE_LIMIT);
   return games.filter((g) => g.phase.name !== 'GAME_OVER');
+}
+
+/** Admin-only "usage" log entry, called directly by /practice and /quiz on round completion. */
+export async function logUsage(session: UsageSession): Promise<void> {
+  await pickStore().logUsage(session);
+}
+
+/** Most-recently-logged sessions first, for the admin usage view. */
+export async function listUsage(limit: number): Promise<UsageSession[]> {
+  return pickStore().listUsage(limit);
 }
 
 /**

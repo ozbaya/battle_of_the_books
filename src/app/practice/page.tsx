@@ -7,7 +7,9 @@ import { ANSWER_REVEAL_DELAY_MS, type AnswerOutcome } from '@/components/AnswerR
 import { MicLevelMeter, useMicCheck } from '@/components/MicCheck';
 import { MockAnswerForm } from '@/components/MockAnswerForm';
 import { RealRecordingPanel } from '@/components/RealRecordingPanel';
+import { useClientValue } from '@/lib/hooks/useClientValue';
 import { SCORE } from '@/lib/game/config';
+import { SOLO_NAME_KEY } from '@/lib/soloName';
 
 const ROUND_SIZE = 10;
 // How long to hold the correct answer on screen when the kid didn't get full
@@ -44,6 +46,20 @@ export default function PracticePage() {
   const [results, setResults] = useState<RoundResult[]>([]);
   const [starting, setStarting] = useState(false);
   const mic = useMicCheck();
+  const storedName = useClientValue(() => localStorage.getItem(SOLO_NAME_KEY) ?? '', '');
+  // null = "untouched this session", so the field shows the hydrated stored
+  // value without needing an effect to copy it into local state.
+  const [typedName, setTypedName] = useState<string | null>(null);
+  const name = typedName ?? storedName;
+
+  function updateName(value: string) {
+    setTypedName(value);
+    try {
+      localStorage.setItem(SOLO_NAME_KEY, value);
+    } catch {
+      // Private browsing etc. — the field still works for this session.
+    }
+  }
 
   // Fetched ahead of time (not gated behind the Start tap) so that by the
   // time the user taps "Start practicing", we already know mockAi and can
@@ -78,9 +94,30 @@ export default function PracticePage() {
     setResults((prev) => [...prev, { points }]);
   }
 
+  // Fire-and-forget: /practice keeps no server state of its own, so this is
+  // the only record of a round ever happening, for the admin usage view.
+  // Never awaited by a caller and never surfaces an error to the kid.
+  function logRoundUsage(roundResults: RoundResult[]) {
+    const correct = roundResults.filter((r) => r.points === SCORE.FULL).length;
+    const titleOnly = roundResults.filter((r) => r.points === SCORE.TITLE_ONLY).length;
+    const wrong = roundResults.filter((r) => r.points === SCORE.WRONG).length;
+    const noAnswer = roundResults.filter((r) => r.points === SCORE.NONE).length;
+    const score = roundResults.reduce((sum, r) => sum + r.points, 0);
+    fetch('/api/usage/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'practice', name, totalQuestions: order.length, correct, titleOnly, wrong, noAnswer, score }),
+    }).catch(() => {});
+  }
+
+  function finishRound() {
+    setSessionPhase('done');
+    logRoundUsage(results);
+  }
+
   function next() {
     if (position + 1 >= order.length) {
-      setSessionPhase('done');
+      finishRound();
     } else {
       setPosition((p) => p + 1);
     }
@@ -132,6 +169,12 @@ export default function PracticePage() {
         <p className="max-w-sm opacity-70">
           Answer {Math.min(ROUND_SIZE, questions.length)} questions on your own — no team, no robots, just you.
         </p>
+        <input
+          value={name}
+          onChange={(e) => updateName(e.target.value)}
+          placeholder="Your name (optional)"
+          className="w-full max-w-xs rounded-xl border border-neutral-300 px-4 py-2 text-center dark:border-neutral-700 dark:bg-neutral-900"
+        />
         <button
           onClick={startRound}
           disabled={starting || questions.length === 0}
@@ -171,7 +214,7 @@ export default function PracticePage() {
       onSubmitMock={(text) => submitMock(questionIndex, text)}
       onSubmitReal={(blob, filename) => submitReal(questionIndex, blob, filename)}
       onNext={next}
-      onFinish={() => setSessionPhase('done')}
+      onFinish={finishRound}
       isLast={position + 1 >= order.length}
     />
   );

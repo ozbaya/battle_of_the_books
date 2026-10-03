@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import type { Difficulty } from '@/lib/game/types';
 import { useGameState } from '@/lib/hooks/useGameState';
+import { aggregateUsageByName, type UsageMode, type UsageSession, type UsageTotals } from '@/lib/usage';
 
 interface GameSummary {
   code: string;
@@ -11,6 +12,11 @@ interface GameSummary {
   phase: string;
   createdAt: number;
 }
+
+const MODE_LABEL: Record<UsageMode, string> = {
+  practice: '🎯 Practice',
+  quiz: '🧠 Quiz',
+};
 
 interface StoreDiagnostics {
   active: 'memory' | 'redis';
@@ -82,6 +88,7 @@ export default function AdminPage() {
         }}
       />
       {selectedCode && <ManageGame code={selectedCode} />}
+      <UsageSection />
     </main>
   );
 }
@@ -381,6 +388,129 @@ function ManageGame({ code }: { code: string }) {
             ))}
             {state.history.length === 0 && <p className="opacity-60">No answers yet.</p>}
           </ul>
+        </>
+      )}
+    </section>
+  );
+}
+
+/**
+ * Usage overview for the solo modes (/practice and /quiz) — the only modes
+ * with no other persistent record, since team games already show up above
+ * and practice/quiz keep zero server state of their own otherwise. Fetches
+ * independently on mount (not tied to the games poll above).
+ */
+function UsageSection() {
+  const [sessions, setSessions] = useState<UsageSession[] | null>(null);
+  const [totals, setTotals] = useState<UsageTotals[]>([]);
+  const [modeFilter, setModeFilter] = useState<UsageMode | 'all'>('all');
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const res = await fetch('/api/admin/usage');
+      if (cancelled || !res.ok) return;
+      const body = await res.json();
+      if (cancelled) return;
+      setSessions(body.sessions ?? []);
+      setTotals(body.totals ?? []);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshKey]);
+
+  const refresh = () => setRefreshKey((k) => k + 1);
+
+  const filteredSessions = (sessions ?? []).filter((s) => modeFilter === 'all' || s.mode === modeFilter);
+  const filteredTotals = modeFilter === 'all' ? totals : aggregateUsageByName(filteredSessions);
+
+  return (
+    <section className="flex flex-col gap-4 rounded-2xl border border-neutral-200 p-5 dark:border-neutral-800">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-xl font-bold">App usage — Practice &amp; Quiz</h2>
+        <div className="flex items-center gap-2">
+          <select
+            value={modeFilter}
+            onChange={(e) => setModeFilter(e.target.value as UsageMode | 'all')}
+            className="rounded-lg border border-neutral-300 px-2 py-1 text-sm dark:border-neutral-700 dark:bg-neutral-900"
+          >
+            <option value="all">All modes</option>
+            <option value="practice">🎯 Practice</option>
+            <option value="quiz">🧠 Quiz</option>
+          </select>
+          <button onClick={refresh} className="text-sm text-sky-600 underline dark:text-sky-400">
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      {sessions === null && <p className="opacity-60">Loading…</p>}
+
+      {sessions !== null && (
+        <>
+          <div>
+            <h3 className="mb-2 font-bold">By player</h3>
+            {filteredTotals.length === 0 && <p className="opacity-60">No sessions logged yet.</p>}
+            {filteredTotals.length > 0 && (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[480px] border-collapse text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-neutral-200 opacity-70 dark:border-neutral-800">
+                      <th className="py-1 pr-3">Name</th>
+                      <th className="py-1 pr-3 text-right">Sessions</th>
+                      <th className="py-1 pr-3 text-right">Questions</th>
+                      <th className="py-1 pr-3 text-right">Correct</th>
+                      <th className="py-1 pr-3 text-right">Wrong</th>
+                      <th className="py-1 pr-3 text-right">No answer</th>
+                      <th className="py-1 text-right">Total score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredTotals.map((t) => (
+                      <tr key={t.name} className="border-b border-neutral-100 dark:border-neutral-900">
+                        <td className="py-1 pr-3 font-semibold">{t.name}</td>
+                        <td className="py-1 pr-3 text-right tabular-nums">{t.sessions}</td>
+                        <td className="py-1 pr-3 text-right tabular-nums">{t.correct + t.titleOnly + t.wrong + t.noAnswer}</td>
+                        <td className="py-1 pr-3 text-right tabular-nums">{t.correct}</td>
+                        <td className="py-1 pr-3 text-right tabular-nums">{t.wrong}</td>
+                        <td className="py-1 pr-3 text-right tabular-nums">{t.noAnswer}</td>
+                        <td className="py-1 text-right font-bold tabular-nums">{t.score}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <h3 className="mb-2 font-bold">Recent sessions</h3>
+            {filteredSessions.length === 0 && <p className="opacity-60">No sessions logged yet.</p>}
+            {filteredSessions.length > 0 && (
+              <ul className="flex flex-col gap-1">
+                {filteredSessions.slice(0, 50).map((s) => (
+                  <li
+                    key={s.id}
+                    className="flex flex-wrap items-center gap-2 rounded-lg bg-black/5 px-3 py-2 text-sm dark:bg-white/5"
+                  >
+                    <span className="font-semibold">{s.name}</span>
+                    <span>{MODE_LABEL[s.mode]}</span>
+                    <span className="opacity-70">{new Date(s.endedAt).toLocaleString()}</span>
+                    <span className="opacity-70">
+                      {s.correct + s.titleOnly + s.wrong + s.noAnswer}/{s.totalQuestions} answered
+                    </span>
+                    <span>
+                      ✅ {s.correct}
+                      {s.titleOnly > 0 && <> · 📖 {s.titleOnly}</>} · ❌ {s.wrong} · — {s.noAnswer}
+                    </span>
+                    <span className="font-bold">score {s.score}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </>
       )}
     </section>

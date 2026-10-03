@@ -1,5 +1,6 @@
 import { Redis } from '@upstash/redis';
 import type { GameState } from '../game/types';
+import type { UsageSession } from '../usage';
 import type { Store } from './types';
 
 // Games expire from Redis after 24h; the TTL is refreshed on every write so a
@@ -16,6 +17,13 @@ function key(code: string): string {
 // the `game:*` key) — listCodes()'s callers are expected to drop any code
 // whose load() comes back null, and forgetCode() lazily prunes it here too.
 const INDEX_KEY = 'games:index';
+
+// Capped list of completed sessions for the admin "usage" view, oldest
+// entries dropped past USAGE_LOG_CAP. No TTL — unlike game state (whose 24h
+// expiry bounds storage of stale games), this is meant to persist, since
+// its whole purpose is historical visibility.
+const USAGE_KEY = 'usage:sessions';
+const USAGE_LOG_CAP = 500;
 
 // Vercel Storage integrations (e.g. connecting an Upstash Redis database
 // from the Marketplace) prefix every injected env var with whatever name you
@@ -100,5 +108,14 @@ export const redisStore: Store = {
 
   async delete(code) {
     await Promise.all([getClient().del(key(code)), getClient().zrem(INDEX_KEY, code)]);
+  },
+
+  async logUsage(session) {
+    await getClient().lpush(USAGE_KEY, session);
+    await getClient().ltrim(USAGE_KEY, 0, USAGE_LOG_CAP - 1);
+  },
+
+  async listUsage(limit) {
+    return getClient().lrange<UsageSession>(USAGE_KEY, 0, limit - 1);
   },
 };

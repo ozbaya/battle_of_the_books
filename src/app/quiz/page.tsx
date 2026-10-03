@@ -8,7 +8,9 @@ import { ANSWER_REVEAL_DELAY_MS, type AnswerOutcome } from '@/components/AnswerR
 import { MicLevelMeter, useMicCheck } from '@/components/MicCheck';
 import { MockAnswerForm } from '@/components/MockAnswerForm';
 import { RealRecordingPanel } from '@/components/RealRecordingPanel';
+import { useClientValue } from '@/lib/hooks/useClientValue';
 import { SCORE } from '@/lib/game/config';
+import { SOLO_NAME_KEY } from '@/lib/soloName';
 
 // Preview feature: a title<->author flashcard quiz, practice-mode-only (no
 // team/robots). Deliberately mirrors src/app/practice/page.tsx's structure
@@ -127,6 +129,20 @@ export default function QuizPage() {
   const [starting, setStarting] = useState(false);
   const mic = useMicCheck();
   const [sounds, setSounds] = useState<SoundBoard | null>(null);
+  const storedName = useClientValue(() => localStorage.getItem(SOLO_NAME_KEY) ?? '', '');
+  // null = "untouched this session", so the field shows the hydrated stored
+  // value without needing an effect to copy it into local state.
+  const [typedName, setTypedName] = useState<string | null>(null);
+  const name = typedName ?? storedName;
+
+  function updateName(value: string) {
+    setTypedName(value);
+    try {
+      localStorage.setItem(SOLO_NAME_KEY, value);
+    } catch {
+      // Private browsing etc. — the field still works for this session.
+    }
+  }
 
   useEffect(() => {
     fetch('/api/quiz/questions')
@@ -159,9 +175,29 @@ export default function QuizPage() {
     setResults((prev) => [...prev, { points }]);
   }
 
+  // Fire-and-forget: /quiz keeps no server state of its own, so this is the
+  // only record of a round ever happening, for the admin usage view. Never
+  // awaited by a caller and never surfaces an error to the kid.
+  function logRoundUsage(roundResults: RoundResult[]) {
+    const correct = roundResults.filter((r) => r.points === SCORE.FULL).length;
+    const wrong = roundResults.filter((r) => r.points === SCORE.WRONG).length;
+    const noAnswer = roundResults.filter((r) => r.points === SCORE.NONE).length;
+    const score = roundResults.reduce((sum, r) => sum + r.points, 0);
+    fetch('/api/usage/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'quiz', name, totalQuestions: order.length, correct, titleOnly: 0, wrong, noAnswer, score }),
+    }).catch(() => {});
+  }
+
+  function finishRound() {
+    setSessionPhase('done');
+    logRoundUsage(results);
+  }
+
   function next() {
     if (position + 1 >= order.length) {
-      setSessionPhase('done');
+      finishRound();
     } else {
       setPosition((p) => p + 1);
     }
@@ -201,6 +237,12 @@ export default function QuizPage() {
         <p className="max-w-sm opacity-70">
           {Math.min(ROUND_SIZE, prompts.length)} quick flashcards — name the author, or name the book — no team, no robots, just you.
         </p>
+        <input
+          value={name}
+          onChange={(e) => updateName(e.target.value)}
+          placeholder="Your name (optional)"
+          className="w-full max-w-xs rounded-xl border border-neutral-300 px-4 py-2 text-center dark:border-neutral-700 dark:bg-neutral-900"
+        />
         <button
           onClick={startRound}
           disabled={starting || prompts.length === 0}
@@ -241,7 +283,7 @@ export default function QuizPage() {
       onSubmitMock={(text) => submitMock(questionIndex, text)}
       onSubmitReal={(blob, filename) => submitReal(questionIndex, blob, filename)}
       onNext={next}
-      onFinish={() => setSessionPhase('done')}
+      onFinish={finishRound}
       isLast={position + 1 >= order.length}
     />
   );
