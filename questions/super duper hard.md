@@ -202,3 +202,203 @@
 | In what book does a player make a decision involving a championship game and a religious observance? | You Never Heard Of Sandy Koufax?! | Jonah Winter |
 | In what book does a sports career change because repeated physical pain makes continuing at the same level impossible? | You Never Heard Of Sandy Koufax?! | Jonah Winter |
 | In what book does a player become a symbol of something beyond sports because of a choice he makes when millions of people are watching? | You Never Heard Of Sandy Koufax?! | Jonah Winter |
+| In what book does a character remember being given a name after people noticed a physical feature that had been present since infancy? | The One and Only Ivan | Katherine Applegate |
+| In what book does a character describe learning to recognize the sound of a particular machine before understanding what the machine was doing? | The One and Only Ivan | Katherine Applegate |
+| In what book does a character explain why a certain piece of furniture became a useful hiding place? | The One and Only Ivan | Katherine Applegate |
+| In what book does a character become interested in a discarded newspaper because of one particular image printed in it? | The One and Only Ivan | Katherine Applegate |
+| In what book does a character notice that someone has been quietly observing his artwork and changing behavior because of it? | The One and Only Ivan | Katherine Applegate |
+| In what book does a character describe an early memory in which a family member used a simple object to make a frightening situation less frightening? | The One and Only Ivan | Katherine Applegate |
+| In what book does a character distinguish between remembering a place and remembering how that place felt? | The One and Only Ivan | Katherine Applegate |
+| In what book does a character decide that a particular drawing should remain unfinished because finishing it would change its meaning? | The One and Only Ivan | Katherine Applegate |
+| In what book does a character recognize a familiar sound and realize that another character has arrived before seeing that character? | The One and Only Ivan | Katherine Applegate |
+| In what book does a character use a wall or other surface to display something that eventually attracts unexpected attention? | The One and Only Ivan | Katherine Applegate |
+| In what book does a historical comparison depend on two people having fathers with occupations that were not the same but were similarly connected to public life? | Lincoln and Kennedy: A Pair to Compare | Gene Barretta |
+| In what book does a comparison identify a similarity in the names of two brothers of the central figures? | Lincoln and Kennedy: A Pair to Compare | Gene Barretta |
+| In what book does a comparison connect two political careers through an earlier position that both people held? | Lincoln and Kennedy: A Pair to Compare | Gene Barretta |
+| In what book does a comparison point out that two people had wives who shared the same first name? | Lincoln and Kennedy: A Pair to Compare | Gene Barretta |
+| In what book does a comparison involve two people whose deaths occurred in places with similar names? | Lincoln and Kennedy: A Pair to Compare | Gene Barretta |
+| In what book does a comparison mention a person who was present near one historical figure at the time of a major event? | Lincoln and Kennedy: A Pair to Compare | Gene Barretta |
+| In what book does a comparison connect two historical figures through a detail involving their children and the White House? | Lincoln and Kennedy: A Pair to Compare | Gene Barretta |
+| In what book does a comparison reveal that an alleged coincidence involves the names of people who were born in different centuries? | Lincoln and Kennedy: A Pair to Compare | Gene Barretta |
+| In what book does a comparison include a similarity involving the initials of two people who served as presidents? | Lincoln and Kennedy: A Pair to Compare | Gene Barretta |
+| In what book does a comparison use a pair of numbers to highlight an unusual connection between two historical events? | Lincoln and Kennedy: A Pair to Compare | Gene Barretta |
+| In what book does a child make a purchase without realizing that the seller has created the item from a recipe? | Freckle Juice | Judy Blume |
+| In what book does a child become suspicious after being told that a particular ingredient is difficult to obtain? | Freckle Juice | Judy Blume |
+| In what book does a child keep checking a mirror or other reflective surface while waiting for a physical change? | Freckle Juice | Judy Blume |
+| In what book does a child discover that another child has exaggerated the value of something in order to make a trade? | Freckle Juice | Judy Blume |
+| In what book does a child try to conceal a transaction by placing something in an unexpected part of his clothing? | Freckle Juice | Judy Blume |
+| In what book does a child worry that a parent will notice evidence of a secret before the child has time to explain it? | Freckle Juice | Judy Blume |
+| In what book does a child learn that an appearance he envies is not as desirable to its owner as he assumed? | Freckle Juice | Judy Blume |
+| In what book does a child become angry because someone refuses to sell him something even though he has the money? | Freckle Juice | Judy Blume |
+| In what book does a child discover that the supposed solution to his problem depends on a claim that was never tested? | Freckle Juice | Judy Blume |
+| In what book does a child finally admit what he has done only after another person has already figured it out? | Freckle Juice | Judy Blume |
+| In what book does an animal's disappearance lead people to search an area where a small physical clue eventually changes the direction of the search? | Bobbie the Wonder Dog: A True Story | Tricia Brown |
+| In what book does a traveler report seeing an animal whose description is convincing enough to make a family reconsider what happened? | Bobbie the Wonder Dog: A True Story | Tricia Brown |
+| In what book does a family receive information about an animal from someone who has never met the family before? | Bobbie the Wonder Dog: A True Story | Tricia Brown |
+| In what book does a long-distance journey include periods when the traveler must survive without the ordinary help of people? | Bobbie the Wonder Dog: A True Story | Tricia Brown |
+| In what book does a person decide to publicize an unusual event partly because he believes other people should know about it? | Bobbie the Wonder Dog: A True Story | Tricia Brown |
+| In what book does a returned animal show evidence of having encountered people along the way even though nobody knows exactly who helped it? | Bobbie the Wonder Dog: A True Story | Tricia Brown |
+| In what book does a family compare an animal's condition at its return with how it looked before disappearing? | Bobbie the Wonder Dog: A True Story | Tricia Brown |
+| In what book does a story about a missing animal become widely known after appearing in printed reports? | Bobbie the Wonder Dog: A True Story | Tricia Brown |
+| In what book does a person attempt to explain a remarkable return using ordinary possibilities before accepting that the explanation is uncertain? | Bobbie the Wonder Dog: A True Story | Tricia Brown |
+| In what book does an animal's journey become measurable only after people begin comparing reports from different locations? | Bobbie the Wonder Dog: A True Story | Tricia Brown |
+| In what book does a story from the past begin with someone finding an unexpected animal in a place where it should not have been? | Tornado | Betsy Byars |
+| In what book does a character explain why a particular animal was not immediately trusted by the people who encountered it? | Tornado | Betsy Byars |
+| In what book does a character recall using a piece of household equipment to make a difficult job easier? | Tornado | Betsy Byars |
+| In what book does a character's memory include a moment when a valuable item is temporarily mistaken for something worthless? | Tornado | Betsy Byars |
+| In what book does a character tell a story in which a person earns trust by doing something unexpectedly brave? | Tornado | Betsy Byars |
+| In what book does a character remember an argument that began because two people wanted different things from the same animal? | Tornado | Betsy Byars |
+| In what book does a past event explain why someone later reacts strongly to a particular sound? | Tornado | Betsy Byars |
+| In what book does a character remember a journey that becomes difficult because someone refuses to leave an animal behind? | Tornado | Betsy Byars |
+| In what book does a story from years earlier contain an object that later serves as a reminder of the person who owned it? | Tornado | Betsy Byars |
+| In what book does an older character interrupt a story to correct a small factual detail remembered by someone else? | Tornado | Betsy Byars |
+| In what book does a child discover that a glove can become edible and then has to decide what to do when another child demands a piece? | The Chocolate Touch | Patrick Skene Catling |
+| In what book does a child find that a drink behaves differently after being poured into a container? | The Chocolate Touch | Patrick Skene Catling |
+| In what book does a child become embarrassed when a musical performance produces a strange sound instead of the expected one? | The Chocolate Touch | Patrick Skene Catling |
+| In what book does a child at a party discover that a game involving food has become impossible to play normally? | The Chocolate Touch | Patrick Skene Catling |
+| In what book does a child attempt to eat something specifically because he thinks doing so will prove that his strange condition is useful? | The Chocolate Touch | Patrick Skene Catling |
+| In what book does a child become frightened after discovering that a person he loves has been affected by the same strange change as ordinary objects? | The Chocolate Touch | Patrick Skene Catling |
+| In what book does a child return to a location and discover that objects from his earlier experiences have been placed on display? | The Chocolate Touch | Patrick Skene Catling |
+| In what book does a child realize that the condition he enjoyed at first has made him unable to accept a normal meal? | The Chocolate Touch | Patrick Skene Catling |
+| In what book does a child reject an opportunity to obtain more of something he once wanted because he has learned what it can cost him? | The Chocolate Touch | Patrick Skene Catling |
+| In what book does a child make a final request while holding onto a belief that another character knows is mistaken? | The Chocolate Touch | Patrick Skene Catling |
+| In what book does a child initially respond to a learning problem by inventing a reason why the problem does not matter? | Muggie Maggie | Beverly Cleary |
+| In what book does a child practice a skill secretly because admitting that she needs help would be embarrassing? | Muggie Maggie | Beverly Cleary |
+| In what book does an adult use a child's interest in animals or games as a way to make an academic task more meaningful? | Muggie Maggie | Beverly Cleary |
+| In what book does a child discover that being responsible for a small task requires a skill she had previously dismissed as useless? | Muggie Maggie | Beverly Cleary |
+| In what book does a child misread an adult's expression and assume that she is about to be punished? | Muggie Maggie | Beverly Cleary |
+| In what book does a child encounter a written word in the real world that she can finally understand because of something learned at school? | Muggie Maggie | Beverly Cleary |
+| In what book does a child become frustrated because another person can perform a task effortlessly that she has been avoiding? | Muggie Maggie | Beverly Cleary |
+| In what book does a child discover that an adult's unusual teaching method was designed specifically for her? | Muggie Maggie | Beverly Cleary |
+| In what book does a child use a newly learned skill while outside the classroom and realize its practical value? | Muggie Maggie | Beverly Cleary |
+| In what book does a child become proud of herself after completing a task that would previously have been impossible? | Muggie Maggie | Beverly Cleary |
+| In what book does a student choose a word because he believes that objects should not have to accept names assigned by other people? | Frindle | Andrew Clements |
+| In what book does a student arrange for a small group to use an unfamiliar word repeatedly in the presence of an adult? | Frindle | Andrew Clements |
+| In what book does an adult attempt to stop a new expression by refusing to use it while others deliberately continue? | Frindle | Andrew Clements |
+| In what book does a student discover that a newspaper article has made a private classroom experiment much more public? | Frindle | Andrew Clements |
+| In what book does a business opportunity arise because people outside the school begin using a newly invented word? | Frindle | Andrew Clements |
+| In what book does a parent become involved after a child's seemingly harmless experiment begins generating money? | Frindle | Andrew Clements |
+| In what book does a teacher's private agreement with a student remain hidden for years? | Frindle | Andrew Clements |
+| In what book does a student later discover that an adult had understood the larger implications of his experiment all along? | Frindle | Andrew Clements |
+| In what book does a child's school project eventually become associated with a dictionary entry? | Frindle | Andrew Clements |
+| In what book does a former classroom disagreement become meaningful again when two people meet much later in life? | Frindle | Andrew Clements |
+| In what book does a child calculate a profit by subtracting the cost of supplies from money collected? | The Lemonade War | Jacqueline Davies |
+| In what book does a child make a sales pitch that depends on offering customers something they did not realize they wanted? | The Lemonade War | Jacqueline Davies |
+| In what book does a child use a chart or list to compare several selling locations? | The Lemonade War | Jacqueline Davies |
+| In what book does a child change a recipe after realizing that customers care about a particular ingredient? | The Lemonade War | Jacqueline Davies |
+| In what book does a child become frustrated when weather reduces the number of potential customers? | The Lemonade War | Jacqueline Davies |
+| In what book does a child discover that a family member has made a business decision without sharing the information? | The Lemonade War | Jacqueline Davies |
+| In what book does a child create a reward for customers and then realize that the reward reduces the amount earned per sale? | The Lemonade War | Jacqueline Davies |
+| In what book does a child attempt to recruit helpers and has to decide how much each helper should receive? | The Lemonade War | Jacqueline Davies |
+| In what book does a child interpret another person's sales success as evidence of unfair behavior before learning another explanation? | The Lemonade War | Jacqueline Davies |
+| In what book does a child finally recognize that the competition has been driven by a personal disagreement rather than money alone? | The Lemonade War | Jacqueline Davies |
+| In what book does a character use an old book as an improvised defense against something unexpectedly entering a building? | Because of Winn-Dixie | Kate DiCamillo |
+| In what book does a character explain why a particular tree has become associated with a painful memory? | Because of Winn-Dixie | Kate DiCamillo |
+| In what book does a character describe a recipe or candy whose flavor is deliberately both sweet and sorrowful? | Because of Winn-Dixie | Kate DiCamillo |
+| In what book does a child learn that someone who appears frightening has been caring for living things in an unusual way? | Because of Winn-Dixie | Kate DiCamillo |
+| In what book does a child discover that music changes the behavior of several animals at once? | Because of Winn-Dixie | Kate DiCamillo |
+| In what book does a child learn about a person's past through a story that includes a military uniform and a family tragedy? | Because of Winn-Dixie | Kate DiCamillo |
+| In what book does a character's fear of storms cause him to run repeatedly between two rooms? | Because of Winn-Dixie | Kate DiCamillo |
+| In what book does a child prepare sandwiches by removing the crusts and cutting the pieces into triangles? | Because of Winn-Dixie | Kate DiCamillo |
+| In what book does a guest arrive at a gathering carrying a collection of pictures that are used as decorations? | Because of Winn-Dixie | Kate DiCamillo |
+| In what book does a child learn that a place named for waiting has a second name connected to growth? | Because of Winn-Dixie | Kate DiCamillo |
+| In what book does a child receive soap that is especially valuable because ordinary washing supplies are scarce? | Boxes for Katje | Candace Fleming |
+| In what book does a child receive clothing that is much too large and has to think about how it might still be useful? | Boxes for Katje | Candace Fleming |
+| In what book does a package contain something that can be eaten but is treated almost like a luxury? | Boxes for Katje | Candace Fleming |
+| In what book does a small American community organize a collection after learning that one family overseas lacks ordinary necessities? | Boxes for Katje | Candace Fleming |
+| In what book does a child send a letter that includes a request for something needed by people beyond her own household? | Boxes for Katje | Candace Fleming |
+| In what book does a postman become part of the story because he repeatedly carries packages between a home and a distant community? | Boxes for Katje | Candace Fleming |
+| In what book does a child discover that an item received from abroad is connected to an ordinary activity that has become difficult locally? | Boxes for Katje | Candace Fleming |
+| In what book does a community collect so many supplies that the original recipient's needs are no longer the only concern? | Boxes for Katje | Candace Fleming |
+| In what book does a child send a personal object back across the ocean as a thank-you? | Boxes for Katje | Candace Fleming |
+| In what book does a community's response eventually help restore something that had been damaged during the war? | Boxes for Katje | Candace Fleming |
+| In what book does an investigator use a disguise involving a household appliance or piece of equipment to enter a restricted place? | InvestiGators | John Patrick Green |
+| In what book does a clue turn out to be hidden in a pattern that looks meaningless at first? | InvestiGators | John Patrick Green |
+| In what book does a character use a communication device to send information while trying not to reveal his location? | InvestiGators | John Patrick Green |
+| In what book does an investigation require following a trail that is interrupted by an unexpectedly sticky or messy obstacle? | InvestiGators | John Patrick Green |
+| In what book does a character mistake a villain's decoy for the actual target? | InvestiGators | John Patrick Green |
+| In what book does a gadget malfunction at precisely the moment when a character needs it to work? | InvestiGators | John Patrick Green |
+| In what book does an investigator recognize a clue because it resembles something encountered during an earlier case? | InvestiGators | John Patrick Green |
+| In what book does a character reveal his identity accidentally because he forgets to maintain an invented role? | InvestiGators | John Patrick Green |
+| In what book does a team use a ridiculous-looking object to accomplish a genuinely important investigative task? | InvestiGators | John Patrick Green |
+| In what book does an apparent defeat turn out to have allowed the investigators to reach a more important location? | InvestiGators | John Patrick Green |
+| In what book does a character calculate the difference between the time shown by two clocks? | The First State of Being | Erin Entrada Kelly |
+| In what book does a character recognize that a seemingly ordinary photograph contains information about a person who should not exist in the present? | The First State of Being | Erin Entrada Kelly |
+| In what book does a character hide a device because another person might use it to discover information that was meant to remain secret? | The First State of Being | Erin Entrada Kelly |
+| In what book does a character use a computer or other technology to investigate an unexplained detail from another person's story? | The First State of Being | Erin Entrada Kelly |
+| In what book does a character become worried after realizing that a stranger knows the result of an event that has not happened yet? | The First State of Being | Erin Entrada Kelly |
+| In what book does a character explain why changing one small event could have consequences much larger than expected? | The First State of Being | Erin Entrada Kelly |
+| In what book does a character reveal that a personal object has traveled across decades before reaching its current owner? | The First State of Being | Erin Entrada Kelly |
+| In what book does a character use knowledge from the future to answer a question about a past event? | The First State of Being | Erin Entrada Kelly |
+| In what book does a character worry that telling the truth about his identity would cause another person to make a dangerous choice? | The First State of Being | Erin Entrada Kelly |
+| In what book does a character decide that some information should remain unknown because knowing it could change someone's behavior? | The First State of Being | Erin Entrada Kelly |
+| In what book does a character make a signal by arranging materials so that the pattern can be seen from above? | Nim's Island | Wendy Orr |
+| In what book does a character improvise a way to catch or obtain food after the usual method fails? | Nim's Island | Wendy Orr |
+| In what book does a character discover that an animal has damaged something important while trying to help? | Nim's Island | Wendy Orr |
+| In what book does a character use information from a book to decide how to respond to a physical danger? | Nim's Island | Wendy Orr |
+| In what book does a character receive a message that seems reassuring until one unusual detail makes it suspicious? | Nim's Island | Wendy Orr |
+| In what book does a character prepare for a visitor by changing the appearance of a place rather than confronting the visitor directly? | Nim's Island | Wendy Orr |
+| In what book does a character rely on a scheduled communication and become increasingly worried when the expected message does not arrive? | Nim's Island | Wendy Orr |
+| In what book does a character discover that an apparently friendly visitor has misunderstood the purpose of something important? | Nim's Island | Wendy Orr |
+| In what book does a character use an improvised shelter because the normal sleeping arrangement has become unsafe? | Nim's Island | Wendy Orr |
+| In what book does a character realize that an animal has been acting as an early warning system without anyone deliberately training it to do so? | Nim's Island | Wendy Orr |
+| In what book does a child make a hairstyle change that she believes will help someone but instead makes the situation worse? | Clementine | Sara Pennypacker |
+| In what book does a child interpret a teacher's comment as an instruction and then carry it out in a way the teacher did not intend? | Clementine | Sara Pennypacker |
+| In what book does a child attempt to earn forgiveness by giving away something she values? | Clementine | Sara Pennypacker |
+| In what book does a child create a picture whose meaning is misunderstood by the person who sees it? | Clementine | Sara Pennypacker |
+| In what book does a child try to make an adult laugh at an inappropriate moment and accidentally make the adult more upset? | Clementine | Sara Pennypacker |
+| In what book does a child become convinced that an adult's silence means the worst possible outcome? | Clementine | Sara Pennypacker |
+| In what book does a child make a plan to fix a friendship but forget that the other person may have a different idea of what needs fixing? | Clementine | Sara Pennypacker |
+| In what book does a child discover that an object she thought had been thrown away has been kept for sentimental reasons? | Clementine | Sara Pennypacker |
+| In what book does a child take responsibility for a problem that actually began with someone else's decision? | Clementine | Sara Pennypacker |
+| In what book does a child finally understand an adult's earlier reaction after remembering a detail she had initially ignored? | Clementine | Sara Pennypacker |
+| In what book does a character mistake an ordinary modern item for evidence of a completely different historical practice? | Knights of the Kitchen Table | Jon Scieszka |
+| In what book does a character use an expression from modern life that listeners from another time interpret literally? | Knights of the Kitchen Table | Jon Scieszka |
+| In what book does a character attempt to impress an unfamiliar group by claiming knowledge he does not actually possess? | Knights of the Kitchen Table | Jon Scieszka |
+| In what book does a character discover that a supposedly dangerous challenge can be avoided by exploiting a loophole? | Knights of the Kitchen Table | Jon Scieszka |
+| In what book does a character bring a modern food or household item into a setting where nobody recognizes it? | Knights of the Kitchen Table | Jon Scieszka |
+| In what book does a character try to use modern technology to solve a problem but discover that there is no compatible source of power? | Knights of the Kitchen Table | Jon Scieszka |
+| In what book does a character accidentally become involved in a dispute because people believe he has a special status? | Knights of the Kitchen Table | Jon Scieszka |
+| In what book does a character recognize a story from childhood only after encountering a person who claims to be part of it? | Knights of the Kitchen Table | Jon Scieszka |
+| In what book does a character attempt to negotiate with someone who does not understand the modern meaning of a common word? | Knights of the Kitchen Table | Jon Scieszka |
+| In what book does a character's route home depend on solving a problem involving an object that was ordinary in one time period but strange in another? | Knights of the Kitchen Table | Jon Scieszka |
+| In what book does a child remember that a familiar smell once meant safety but later becomes associated with danger? | I Survived the Great Molasses Flood, 1919 | Lauren Tarshis |
+| In what book does a child try to reach a family member by moving through a place that has suddenly become difficult to cross? | I Survived the Great Molasses Flood, 1919 | Lauren Tarshis |
+| In what book does a child use a piece of wood or debris as temporary support while trying to stay above a dangerous substance? | I Survived the Great Molasses Flood, 1919 | Lauren Tarshis |
+| In what book does a child hear a warning from an adult shortly before realizing that the warning is no longer enough? | I Survived the Great Molasses Flood, 1919 | Lauren Tarshis |
+| In what book does a child discover that a familiar neighborhood has been transformed so completely that ordinary landmarks are difficult to recognize? | I Survived the Great Molasses Flood, 1919 | Lauren Tarshis |
+| In what book does a child remember a conversation about a relative's wartime experience while facing a different kind of danger? | I Survived the Great Molasses Flood, 1919 | Lauren Tarshis |
+| In what book does a child encounter a person who is trying to rescue others even though that person is already injured? | I Survived the Great Molasses Flood, 1919 | Lauren Tarshis |
+| In what book does a child survive because another person notices her in a location where she is difficult to see? | I Survived the Great Molasses Flood, 1919 | Lauren Tarshis |
+| In what book does a child wake after the disaster and have difficulty understanding how much time has passed? | I Survived the Great Molasses Flood, 1919 | Lauren Tarshis |
+| In what book does a child return to an ordinary activity after the disaster and realize that the activity now carries a completely different meaning? | I Survived the Great Molasses Flood, 1919 | Lauren Tarshis |
+| In what book does a group of children create a sleeping arrangement that changes because one person's condition makes the original arrangement impractical? | The Boxcar Children | Gertrude Chandler Warner |
+| In what book does a child find a source of food by observing what another person or animal has left behind? | The Boxcar Children | Gertrude Chandler Warner |
+| In what book does a group of children decide that a nearby source of water is too risky to use openly? | The Boxcar Children | Gertrude Chandler Warner |
+| In what book does a child repair or adapt an old object rather than asking an adult for a replacement? | The Boxcar Children | Gertrude Chandler Warner |
+| In what book does a group of children establish rules for sharing a limited supply? | The Boxcar Children | Gertrude Chandler Warner |
+| In what book does a child discover evidence that an adult has been leaving supplies without revealing why? | The Boxcar Children | Gertrude Chandler Warner |
+| In what book does a child become suspicious because someone seems to know details about their hiding place? | The Boxcar Children | Gertrude Chandler Warner |
+| In what book does a group of children change the appearance of their surroundings to make the place look unoccupied? | The Boxcar Children | Gertrude Chandler Warner |
+| In what book does a child recognize a family connection from an object or piece of information before understanding what it means? | The Boxcar Children | Gertrude Chandler Warner |
+| In what book does a child finally understand that an adult's earlier actions were intended to protect the children rather than control them? | The Boxcar Children | Gertrude Chandler Warner |
+| In what book does a character select a word from printed material because it must fit a particular physical space? | Charlotte's Web | E.B. White |
+| In what book does a character become ill after eating more than he can comfortably handle and needs help recovering? | Charlotte's Web | E.B. White |
+| In what book does a character persuade someone to carry him to another location by promising a future food reward? | Charlotte's Web | E.B. White |
+| In what book does a character's writing cause a crowd to travel to a farm even though the writer never intended to become famous? | Charlotte's Web | E.B. White |
+| In what book does a character observe that another animal has a habit of collecting objects that are not valuable to humans? | Charlotte's Web | E.B. White |
+| In what book does a character explain that a certain object was originally intended for a completely different purpose? | Charlotte's Web | E.B. White |
+| In what book does a character's physical condition become noticeable because he is unable to perform a task he normally performs easily? | Charlotte's Web | E.B. White |
+| In what book does a character travel to a fair in a container because ordinary travel would reveal his presence? | Charlotte's Web | E.B. White |
+| In what book does a character make a promise that requires returning to a familiar place after everyone else has left? | Charlotte's Web | E.B. White |
+| In what book does a character leave behind a structure containing numerous small objects that later become the focus of another character's attention? | Charlotte's Web | E.B. White |
+| In what book does an athlete's early reputation suffer because people initially believe he is better suited to a different position? | You Never Heard Of Sandy Koufax?! | Jonah Winter |
+| In what book does an athlete improve dramatically after changing the way he uses one particular physical motion? | You Never Heard Of Sandy Koufax?! | Jonah Winter |
+| In what book does a player become known for a performance in which very few opponents manage to make successful contact? | You Never Heard Of Sandy Koufax?! | Jonah Winter |
+| In what book does a young person learn that an athlete once received little attention despite possessing an unusually powerful ability? | You Never Heard Of Sandy Koufax?! | Jonah Winter |
+| In what book does an athlete's career include a season in which he wins a major award for his performance? | You Never Heard Of Sandy Koufax?! | Jonah Winter |
+| In what book does an athlete become the first person from his religious background to receive a particular honor in his sport? | You Never Heard Of Sandy Koufax?! | Jonah Winter |
+| In what book does an athlete's decision to miss an important contest become more significant because the event occurs on a sacred day? | You Never Heard Of Sandy Koufax?! | Jonah Winter |
+| In what book does a player's retirement surprise people because he is still performing at an exceptionally high level? | You Never Heard Of Sandy Koufax?! | Jonah Winter |
+| In what book does a player's childhood experience help explain why he later approached competition differently from some of his teammates? | You Never Heard Of Sandy Koufax?! | Jonah Winter |
+| In what book does an athlete's legacy depend partly on a decision that had nothing to do with the statistics he produced? | You Never Heard Of Sandy Koufax?! | Jonah Winter |
