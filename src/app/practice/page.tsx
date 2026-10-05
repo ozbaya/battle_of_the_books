@@ -258,7 +258,7 @@ export default function PracticePage() {
                     : 'border border-neutral-300 text-neutral-600 dark:border-neutral-700 dark:text-neutral-300'
                 }`}
               >
-                Rishi Mode 🔥🔥🔥
+                Impossible 🔥🔥🔥
               </button>
             )}
           </div>
