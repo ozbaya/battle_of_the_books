@@ -268,7 +268,7 @@ difficulty is chosen:
 - **Practice** (solo mode, §10+): a Normal/Hard/Super Duper Hard/Rishi Mode toggle on its start
   screen, each harder option only shown once its file has at least one row (hidden otherwise, via
   `/api/practice/questions`'s `hardAvailable`/`superDuperHardAvailable`/`rishiModeAvailable`
-  flags). Rishi Mode's button carries a skull + explosion icon (💀💥) to signal it's the most
+  flags). Rishi Mode's button is named "Impossible" and carries a triple fire icon to signal it's the most
   extreme option. Rishi Mode rounds score 4x (vs. 3x for Super Duper Hard, 2x for Hard, 1x
   standard) in the home page leaderboard (`lib/leaderboard.ts`).
   **Quiz mode has no difficulty toggle** — it always quizzes the standard title/author pairs from
