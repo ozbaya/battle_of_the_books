@@ -1,4 +1,4 @@
-export type Difficulty = 'easy' | 'medium' | 'hard' | 'superDuperHard';
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'superDuperHard' | 'rishiMode';
 
 export interface Question {
   question: string;

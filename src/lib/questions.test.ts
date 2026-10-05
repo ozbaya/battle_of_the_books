@@ -74,6 +74,14 @@ describe('getQuestions', () => {
     const sdhQuestions = getQuestions('superDuperHard');
     expect(sdhQuestions.every((q) => q.question.trim() && q.title.trim() && q.author.trim())).toBe(true);
   });
+
+  // Same deal for questions/"rishi mode.md", Practice and team game's most
+  // extreme tier.
+  it('loads questions/"rishi mode.md" without throwing', () => {
+    expect(() => getQuestions('rishiMode')).not.toThrow();
+    const rishiModeQuestions = getQuestions('rishiMode');
+    expect(rishiModeQuestions.every((q) => q.question.trim() && q.title.trim() && q.author.trim())).toBe(true);
+  });
 });
 
 describe('questionSetForDifficulty', () => {
@@ -85,6 +93,10 @@ describe('questionSetForDifficulty', () => {
     expect(questionSetForDifficulty('superDuperHard')).toBe('superDuperHard');
   });
 
+  it('maps rishiMode to the rishiMode set', () => {
+    expect(questionSetForDifficulty('rishiMode')).toBe('rishiMode');
+  });
+
   it('maps easy and medium to the standard set', () => {
     expect(questionSetForDifficulty('easy')).toBe('standard');
     expect(questionSetForDifficulty('medium')).toBe('standard');
@@ -92,9 +104,10 @@ describe('questionSetForDifficulty', () => {
 });
 
 describe('parseQuestionSet', () => {
-  it('recognizes hard and superDuperHard', () => {
+  it('recognizes hard, superDuperHard and rishiMode', () => {
     expect(parseQuestionSet('hard')).toBe('hard');
     expect(parseQuestionSet('superDuperHard')).toBe('superDuperHard');
+    expect(parseQuestionSet('rishiMode')).toBe('rishiMode');
   });
 
   it('defaults anything else (including null/undefined) to standard', () => {

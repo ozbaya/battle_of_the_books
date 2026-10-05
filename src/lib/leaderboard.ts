@@ -15,9 +15,10 @@ export interface LeaderboardEntry {
 //     earns the most — so both "answered a lot" and "got them right" push
 //     the score up.
 //  2. Harder content: a question drawn from questions/hard.md is worth
-//     double one from the standard set, and "super duper hard.md" is worth
-//     triple — Practice mode only (team games don't log usage at all, and
-//     Quiz mode has no difficulty option).
+//     double one from the standard set, "super duper hard.md" is worth
+//     triple, and "rishi mode.md" is worth quadruple — Practice mode only
+//     (team games don't log usage at all, and Quiz mode has no difficulty
+//     option).
 //  3. Richer questions: Practice mode's "In what book does X happen?"
 //     trivia (recall a plot clue, then state the full title *and* author)
 //     outweighs Quiz mode's single-field "who wrote X" / "what book is
@@ -36,6 +37,7 @@ const DIFFICULTY_MULTIPLIER: Record<QuestionSet, number> = {
   standard: 1,
   hard: 2,
   superDuperHard: 3,
+  rishiMode: 4,
 };
 
 const MODE_MULTIPLIER: Record<UsageMode, number> = {

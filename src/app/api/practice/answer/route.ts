@@ -12,7 +12,7 @@ export const maxDuration = 30;
 const mockBodySchema = z.object({
   index: z.number().int().min(0),
   text: z.string(),
-  set: z.enum(['standard', 'hard', 'superDuperHard']).optional(),
+  set: z.enum(['standard', 'hard', 'superDuperHard', 'rishiMode']).optional(),
 });
 
 interface AnswerResponse {

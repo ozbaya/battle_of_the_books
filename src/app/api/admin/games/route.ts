@@ -9,7 +9,7 @@ import { getGame, getStoreDiagnostics, insertGame, listRecentGames } from '@/lib
 
 const createSchema = z.object({
   teamName: z.string().trim().min(1).max(60),
-  difficulty: z.enum(['easy', 'medium', 'hard', 'superDuperHard']),
+  difficulty: z.enum(['easy', 'medium', 'hard', 'superDuperHard', 'rishiMode']),
   numQuestions: z.number().int().min(1).optional(),
 });
 
@@ -24,8 +24,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.message }, { status: 400 });
   }
 
-  // Hard/Super Duper Hard games each draw from their own harder question
-  // set (CLAUDE.md §5.1); easy/medium use the standard one.
+  // Hard/Super Duper Hard/Rishi Mode games each draw from their own harder
+  // question set (CLAUDE.md §5.1); easy/medium use the standard one.
   const questions = getQuestions(questionSetForDifficulty(parsed.data.difficulty));
   const requested = parsed.data.numQuestions ?? Math.min(DEFAULT_NUM_QUESTIONS, questions.length);
   const numQuestions = Math.max(1, Math.min(requested, questions.length));

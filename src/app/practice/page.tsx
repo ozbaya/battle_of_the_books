@@ -44,6 +44,8 @@ export default function PracticePage() {
   const [hardAvailable, setHardAvailable] = useState(false);
   const [superDuperHardQuestions, setSuperDuperHardQuestions] = useState<QuestionMeta[]>([]);
   const [superDuperHardAvailable, setSuperDuperHardAvailable] = useState(false);
+  const [rishiModeQuestions, setRishiModeQuestions] = useState<QuestionMeta[]>([]);
+  const [rishiModeAvailable, setRishiModeAvailable] = useState(false);
   const [difficulty, setDifficulty] = useState<QuestionSet>('standard');
   const [mockAi, setMockAi] = useState(true);
   const [sessionPhase, setSessionPhase] = useState<SessionPhase>('start');
@@ -52,7 +54,14 @@ export default function PracticePage() {
   const [results, setResults] = useState<RoundResult[]>([]);
   const [starting, setStarting] = useState(false);
   const mic = useMicCheck();
-  const activePool = difficulty === 'hard' ? hardQuestions : difficulty === 'superDuperHard' ? superDuperHardQuestions : questions;
+  const activePool =
+    difficulty === 'hard'
+      ? hardQuestions
+      : difficulty === 'superDuperHard'
+        ? superDuperHardQuestions
+        : difficulty === 'rishiMode'
+          ? rishiModeQuestions
+          : questions;
   const storedName = useClientValue(() => localStorage.getItem(SOLO_NAME_KEY) ?? '', '');
   // null = "untouched this session", so the field shows the hydrated stored
   // value without needing an effect to copy it into local state.
@@ -81,6 +90,7 @@ export default function PracticePage() {
         setMockAi(Boolean(body.mockAi));
         setHardAvailable(Boolean(body.hardAvailable));
         setSuperDuperHardAvailable(Boolean(body.superDuperHardAvailable));
+        setRishiModeAvailable(Boolean(body.rishiModeAvailable));
 
         const fetches: Promise<unknown>[] = [];
         if (body.hardAvailable) {
@@ -95,6 +105,13 @@ export default function PracticePage() {
             fetch('/api/practice/questions?set=superDuperHard')
               .then((res) => res.json())
               .then((sdBody) => setSuperDuperHardQuestions(sdBody.questions ?? []))
+          );
+        }
+        if (body.rishiModeAvailable) {
+          fetches.push(
+            fetch('/api/practice/questions?set=rishiMode')
+              .then((res) => res.json())
+              .then((rmBody) => setRishiModeQuestions(rmBody.questions ?? []))
           );
         }
         return Promise.all(fetches);
@@ -196,7 +213,7 @@ export default function PracticePage() {
         <p className="max-w-sm opacity-70">
           Answer {Math.min(ROUND_SIZE, activePool?.length ?? 0)} questions on your own — no team, no robots, just you.
         </p>
-        {(hardAvailable || superDuperHardAvailable) && (
+        {(hardAvailable || superDuperHardAvailable || rishiModeAvailable) && (
           <div className="flex flex-wrap justify-center gap-2">
             <button
               onClick={() => setDifficulty('standard')}
@@ -230,6 +247,18 @@ export default function PracticePage() {
                 }`}
               >
                 Super Duper Hard 🔥🔥🔥
+              </button>
+            )}
+            {rishiModeAvailable && (
+              <button
+                onClick={() => setDifficulty('rishiMode')}
+                className={`rounded-lg px-4 py-2 font-bold ${
+                  difficulty === 'rishiMode'
+                    ? 'bg-black text-white ring-2 ring-red-600'
+                    : 'border border-neutral-300 text-neutral-600 dark:border-neutral-700 dark:text-neutral-300'
+                }`}
+              >
+                Rishi Mode 💀💥
               </button>
             )}
           </div>

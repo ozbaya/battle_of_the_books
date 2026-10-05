@@ -29,7 +29,7 @@ export interface UsageSession {
 export const logUsageBodySchema = z.object({
   mode: z.enum(['practice', 'quiz']),
   name: z.string().trim().max(60).optional(),
-  difficulty: z.enum(['standard', 'hard', 'superDuperHard']).optional(),
+  difficulty: z.enum(['standard', 'hard', 'superDuperHard', 'rishiMode']).optional(),
   totalQuestions: z.number().int().min(0).max(1000),
   correct: z.number().int().min(0).max(1000),
   titleOnly: z.number().int().min(0).max(1000),

@@ -47,6 +47,12 @@ describe('sessionPoints', () => {
     expect(superDuperHard).toBe(standard * 3);
   });
 
+  it('a rishi-mode session scores quadruple a standard one with identical results', () => {
+    const standard = sessionPoints(session({ difficulty: 'standard', correct: 4 }));
+    const rishiMode = sessionPoints(session({ difficulty: 'rishiMode', correct: 4 }));
+    expect(rishiMode).toBe(standard * 4);
+  });
+
   it('practice mode ("in what book") outscores quiz mode for identical results', () => {
     const practice = sessionPoints(session({ mode: 'practice', correct: 4 }));
     const quiz = sessionPoints(session({ mode: 'quiz', correct: 4 }));

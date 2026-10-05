@@ -127,10 +127,11 @@ All game URLs are keyed by a short, kid-friendly **game code** (e.g. `OWL42`).
   - Medium: **5 s**
   - Hard: **5 s**
   - Super Duper Hard: **4 s**
+  - Rishi Mode: **4 s**
 - Robot accuracy is fixed for now (`ROBOT_ACCURACY`, default 0.6 correct; of correct answers, ~80% include the author). Keep accuracy in the difficulty config object so it can vary by difficulty later.
 - Robot answer outcomes (first attempt and steal) are decided (seeded random) **when the question opens** and stored in state, so they are deterministic across serverless invocations.
 - Robot answers are displayed as text: correct → the real title/author; wrong → a different book/author from the same question set as the game (see below).
-- **Hard and Super Duper Hard each swap the question set**, not just the robot timing: a Hard game draws its questions from `questions/hard.md`, a Super Duper Hard game from `questions/"super duper hard.md"` (same table format, admin-authored, filled with harder/more obscure questions) — instead of `questions/questions.md`. Easy and Medium use the standard set. `questionSetForDifficulty()` in `lib/questions.ts` is the single mapping from difficulty to file; every route that loads a game's questions derives the set from the game's own stored `difficulty` after loading state (never guesses it up front), so mid-game question-bank consistency holds regardless of which request happens to advance the game.
+- **Hard, Super Duper Hard and Rishi Mode each swap the question set**, not just the robot timing: a Hard game draws its questions from `questions/hard.md`, a Super Duper Hard game from `questions/"super duper hard.md"`, and a Rishi Mode game from `questions/"rishi mode.md"` (same table format, admin-authored, filled with harder/more obscure questions) — instead of `questions/questions.md`. Easy and Medium use the standard set. `questionSetForDifficulty()` in `lib/questions.ts` is the single mapping from difficulty to file; every route that loads a game's questions derives the set from the game's own stored `difficulty` after loading state (never guesses it up front), so mid-game question-bank consistency holds regardless of which request happens to advance the game.
 
 ### Assumptions (confirm with the user if behavior seems off)
 - Robots get a steal attempt when the team's first respondent is wrong or doesn't record (symmetry with the kids' steal).
@@ -256,18 +257,20 @@ Parsing (`lib/questions.ts`):
 - Ship the file with ~10 well-known books so the app works out of the box.
 - **The admin sets the number of questions** when creating a game (required; 1 … number of rows, default 10 or all if fewer). The game picks that many distinct questions at random.
 
-### 5.1 Hard / Super Duper Hard question sets
+### 5.1 Hard / Super Duper Hard / Rishi Mode question sets
 
-Two further optional files, same format and parsing as above, admin-authored:
-**`questions/hard.md`** and **`questions/"super duper hard.md"`** (the latter's filename has
-spaces — quote it in shell commands). Used wherever that difficulty is chosen:
-- **Team games**: picking Hard or Super Duper Hard at game creation uses the matching file for
-  that game's entire question bank instead of `questions.md`; Easy/Medium are unaffected.
-- **Practice** (solo mode, §10+): a Normal/Hard/Super Duper Hard toggle on its start screen, each
-  harder option only shown once its file has at least one row (hidden otherwise, via
-  `/api/practice/questions`'s `hardAvailable`/`superDuperHardAvailable` flags). Super Duper Hard
-  rounds also score 3x (vs. 2x for Hard, 1x standard) in the home page leaderboard
-  (`lib/leaderboard.ts`).
+Three further optional files, same format and parsing as above, admin-authored:
+**`questions/hard.md`**, **`questions/"super duper hard.md"`** and **`questions/"rishi mode.md"`**
+(the latter two filenames have spaces — quote them in shell commands). Used wherever that
+difficulty is chosen:
+- **Team games**: picking Hard, Super Duper Hard or Rishi Mode at game creation uses the matching
+  file for that game's entire question bank instead of `questions.md`; Easy/Medium are unaffected.
+- **Practice** (solo mode, §10+): a Normal/Hard/Super Duper Hard/Rishi Mode toggle on its start
+  screen, each harder option only shown once its file has at least one row (hidden otherwise, via
+  `/api/practice/questions`'s `hardAvailable`/`superDuperHardAvailable`/`rishiModeAvailable`
+  flags). Rishi Mode's button carries a skull + explosion icon (💀💥) to signal it's the most
+  extreme option. Rishi Mode rounds score 4x (vs. 3x for Super Duper Hard, 2x for Hard, 1x
+  standard) in the home page leaderboard (`lib/leaderboard.ts`).
   **Quiz mode has no difficulty toggle** — it always quizzes the standard title/author pairs from
   `questions.md`, by design.
 
@@ -332,7 +335,7 @@ and only the final state write goes through CAS. The OpenAI key is used only on 
 ## 7. Admin
 
 - Protected by `ADMIN_PASSWORD` env var: `/api/admin/login` sets an httpOnly signed cookie; all `/api/admin/*` routes check it.
-- **Create game**: team name, difficulty (Easy 7 s / Medium 5 s / Hard 5 s / Super Duper Hard 4 s — Hard and Super Duper Hard each also drawing questions from their own harder file, §5.1), **number of questions**. Returns the game code and links to `/play`, `/screen`, `/scores`.
+- **Create game**: team name, difficulty (Easy 7 s / Medium 5 s / Hard 5 s / Super Duper Hard 4 s / Rishi Mode 4 s — Hard, Super Duper Hard and Rishi Mode each also drawing questions from their own harder file, §5.1), **number of questions**. Returns the game code and links to `/play`, `/screen`, `/scores`.
 - **Start game** (from the lobby, once the kids have joined) and **End game** (moves to `GAME_OVER` immediately). Everything in between runs automatically — no "next question" button.
 - **Override judgment**: lists answers (current and past questions) with transcript + verdict and buttons **Full (+2) / Title (+1) / Wrong (−0.5) / No answer (0)** to fix mis-transcriptions. Overrides recompute individual and team scores from `history`.
 - List of recent games; games expire from Redis after 24 h (`EX`).

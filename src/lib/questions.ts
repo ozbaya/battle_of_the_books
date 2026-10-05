@@ -75,17 +75,18 @@ export function parseQuestionsMarkdown(content: string): Question[] {
 }
 
 /**
- * 'hard' and 'superDuperHard' are admin-authored, optional extra question
- * files (questions/hard.md, questions/"super duper hard.md") for tougher
- * Practice (and, for 'hard' only — see questionSetForDifficulty — team
- * game) rounds. Empty until filled in.
+ * 'hard', 'superDuperHard' and 'rishiMode' are admin-authored, optional extra
+ * question files (questions/hard.md, questions/"super duper hard.md",
+ * questions/"rishi mode.md") for tougher Practice and team game rounds.
+ * Empty until filled in.
  */
-export type QuestionSet = 'standard' | 'hard' | 'superDuperHard';
+export type QuestionSet = 'standard' | 'hard' | 'superDuperHard' | 'rishiMode';
 
 const QUESTION_FILES: Record<QuestionSet, string> = {
   standard: 'questions.md',
   hard: 'hard.md',
   superDuperHard: 'super duper hard.md',
+  rishiMode: 'rishi mode.md',
 };
 
 export function getQuestions(set: QuestionSet = 'standard'): Question[] {
@@ -99,9 +100,10 @@ const DIFFICULTY_TO_SET: Record<Difficulty, QuestionSet> = {
   medium: 'standard',
   hard: 'hard',
   superDuperHard: 'superDuperHard',
+  rishiMode: 'rishiMode',
 };
 
-/** Team games pick their question bank from their own difficulty: easy/medium use the standard set, hard uses hard.md, superDuperHard uses "super duper hard.md". */
+/** Team games pick their question bank from their own difficulty: easy/medium use the standard set, hard uses hard.md, superDuperHard uses "super duper hard.md", rishiMode uses "rishi mode.md". */
 export function questionSetForDifficulty(difficulty: Difficulty): QuestionSet {
   return DIFFICULTY_TO_SET[difficulty];
 }
@@ -110,5 +112,6 @@ export function questionSetForDifficulty(difficulty: Difficulty): QuestionSet {
 export function parseQuestionSet(value: string | null | undefined): QuestionSet {
   if (value === 'hard') return 'hard';
   if (value === 'superDuperHard') return 'superDuperHard';
+  if (value === 'rishiMode') return 'rishiMode';
   return 'standard';
 }
