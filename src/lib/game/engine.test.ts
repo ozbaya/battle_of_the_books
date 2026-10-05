@@ -181,6 +181,7 @@ describe('robot timing per difficulty', () => {
     ['easy', 7000],
     ['medium', 5000],
     ['hard', 5000],
+    ['superDuperHard', 4000],
   ] as const)('robotBuzzAt = openedAt + %s delay (%s)', (difficulty, delay) => {
     const { state, openedAt } = openFirstQuestion(difficulty);
     const phase = expectPhase(state, 'KIDS_ROUND');

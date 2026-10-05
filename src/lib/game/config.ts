@@ -20,6 +20,7 @@ export const DIFFICULTY_CONFIG: Record<Difficulty, DifficultyConfig> = {
   easy: { robotDelayMs: 7000, accuracy: 0.6, authorRate: 0.8 },
   medium: { robotDelayMs: 5000, accuracy: 0.6, authorRate: 0.8 },
   hard: { robotDelayMs: 5000, accuracy: 0.6, authorRate: 0.8 },
+  superDuperHard: { robotDelayMs: 4000, accuracy: 0.6, authorRate: 0.8 },
 };
 
 export const CAS_MAX_RETRIES = 5;

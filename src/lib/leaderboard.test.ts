@@ -41,6 +41,12 @@ describe('sessionPoints', () => {
     expect(hard).toBe(standard * 2);
   });
 
+  it('a super-duper-hard session scores triple a standard one with identical results', () => {
+    const standard = sessionPoints(session({ difficulty: 'standard', correct: 4 }));
+    const superDuperHard = sessionPoints(session({ difficulty: 'superDuperHard', correct: 4 }));
+    expect(superDuperHard).toBe(standard * 3);
+  });
+
   it('practice mode ("in what book") outscores quiz mode for identical results', () => {
     const practice = sessionPoints(session({ mode: 'practice', correct: 4 }));
     const quiz = sessionPoints(session({ mode: 'quiz', correct: 4 }));

@@ -4,7 +4,7 @@ import { judgeAnswer } from '@/lib/ai/judge';
 import { buildTranscribePrompt, transcribeAnswer } from '@/lib/ai/transcribe';
 import { scoreAnswer } from '@/lib/game/scoring';
 import type { Question } from '@/lib/game/types';
-import { getQuestions, type QuestionSet } from '@/lib/questions';
+import { getQuestions, parseQuestionSet } from '@/lib/questions';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -12,7 +12,7 @@ export const maxDuration = 30;
 const mockBodySchema = z.object({
   index: z.number().int().min(0),
   text: z.string(),
-  set: z.enum(['standard', 'hard']).optional(),
+  set: z.enum(['standard', 'hard', 'superDuperHard']).optional(),
 });
 
 interface AnswerResponse {
@@ -28,7 +28,7 @@ interface AnswerResponse {
  * minus everything GameState-related: no store, no CAS, no Redis. Fully
  * stateless and public — a practice session needs no shared/multiplayer
  * state at all. `set` picks which question bank `index` resolves against
- * (standard questions.md, or the optional harder hard.md).
+ * (standard questions.md, or the optional hard.md / "super duper hard.md").
  */
 export async function POST(request: NextRequest) {
   const mockAi = process.env.MOCK_AI === 'true';
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
   if (mockAi) {
     const json = await request.json().catch(() => null);
     const parsed = mockBodySchema.safeParse(json);
-    const set: QuestionSet = parsed.success && parsed.data.set === 'hard' ? 'hard' : 'standard';
+    const set = parseQuestionSet(parsed.success ? parsed.data.set : undefined);
     const questions = getQuestions(set);
     if (!parsed.success || parsed.data.index >= questions.length) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     const indexRaw = form?.get('index');
     const setRaw = form?.get('set');
     const audio = form?.get('audio');
-    const set: QuestionSet = setRaw === 'hard' ? 'hard' : 'standard';
+    const set = parseQuestionSet(typeof setRaw === 'string' ? setRaw : undefined);
     const questions = getQuestions(set);
     const parsedIndex = typeof indexRaw === 'string' ? Number(indexRaw) : NaN;
     if (!Number.isInteger(parsedIndex) || parsedIndex < 0 || parsedIndex >= questions.length || !(audio instanceof Blob)) {

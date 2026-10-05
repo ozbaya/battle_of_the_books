@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getQuestions, parseQuestionsMarkdown, questionSetForDifficulty } from './questions';
+import { getQuestions, parseQuestionSet, parseQuestionsMarkdown, questionSetForDifficulty } from './questions';
 
 describe('parseQuestionsMarkdown', () => {
   it('parses a valid table', () => {
@@ -66,6 +66,14 @@ describe('getQuestions', () => {
     const hardQuestions = getQuestions('hard');
     expect(hardQuestions.every((q) => q.question.trim() && q.title.trim() && q.author.trim())).toBe(true);
   });
+
+  // Same deal for questions/"super duper hard.md", Practice and team game's
+  // toughest tier.
+  it('loads questions/"super duper hard.md" without throwing', () => {
+    expect(() => getQuestions('superDuperHard')).not.toThrow();
+    const sdhQuestions = getQuestions('superDuperHard');
+    expect(sdhQuestions.every((q) => q.question.trim() && q.title.trim() && q.author.trim())).toBe(true);
+  });
 });
 
 describe('questionSetForDifficulty', () => {
@@ -73,8 +81,26 @@ describe('questionSetForDifficulty', () => {
     expect(questionSetForDifficulty('hard')).toBe('hard');
   });
 
+  it('maps superDuperHard to the superDuperHard set', () => {
+    expect(questionSetForDifficulty('superDuperHard')).toBe('superDuperHard');
+  });
+
   it('maps easy and medium to the standard set', () => {
     expect(questionSetForDifficulty('easy')).toBe('standard');
     expect(questionSetForDifficulty('medium')).toBe('standard');
+  });
+});
+
+describe('parseQuestionSet', () => {
+  it('recognizes hard and superDuperHard', () => {
+    expect(parseQuestionSet('hard')).toBe('hard');
+    expect(parseQuestionSet('superDuperHard')).toBe('superDuperHard');
+  });
+
+  it('defaults anything else (including null/undefined) to standard', () => {
+    expect(parseQuestionSet('standard')).toBe('standard');
+    expect(parseQuestionSet('nonsense')).toBe('standard');
+    expect(parseQuestionSet(null)).toBe('standard');
+    expect(parseQuestionSet(undefined)).toBe('standard');
   });
 });

@@ -224,6 +224,7 @@ function CreateGameForm({ onCreated }: { onCreated: (code: string) => void }) {
             <option value="easy">Easy (7s)</option>
             <option value="medium">Medium (5s)</option>
             <option value="hard">Hard (5s)</option>
+            <option value="superDuperHard">Super Duper Hard (4s)</option>
           </select>
         </label>
         <label className="flex flex-col gap-1">

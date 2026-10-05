@@ -42,6 +42,8 @@ export default function PracticePage() {
   const [questions, setQuestions] = useState<QuestionMeta[] | null>(null);
   const [hardQuestions, setHardQuestions] = useState<QuestionMeta[]>([]);
   const [hardAvailable, setHardAvailable] = useState(false);
+  const [superDuperHardQuestions, setSuperDuperHardQuestions] = useState<QuestionMeta[]>([]);
+  const [superDuperHardAvailable, setSuperDuperHardAvailable] = useState(false);
   const [difficulty, setDifficulty] = useState<QuestionSet>('standard');
   const [mockAi, setMockAi] = useState(true);
   const [sessionPhase, setSessionPhase] = useState<SessionPhase>('start');
@@ -50,7 +52,7 @@ export default function PracticePage() {
   const [results, setResults] = useState<RoundResult[]>([]);
   const [starting, setStarting] = useState(false);
   const mic = useMicCheck();
-  const activePool = difficulty === 'hard' ? hardQuestions : questions;
+  const activePool = difficulty === 'hard' ? hardQuestions : difficulty === 'superDuperHard' ? superDuperHardQuestions : questions;
   const storedName = useClientValue(() => localStorage.getItem(SOLO_NAME_KEY) ?? '', '');
   // null = "untouched this session", so the field shows the hydrated stored
   // value without needing an effect to copy it into local state.
@@ -78,10 +80,24 @@ export default function PracticePage() {
         setQuestions(body.questions ?? []);
         setMockAi(Boolean(body.mockAi));
         setHardAvailable(Boolean(body.hardAvailable));
-        if (!body.hardAvailable) return;
-        return fetch('/api/practice/questions?set=hard')
-          .then((res) => res.json())
-          .then((hardBody) => setHardQuestions(hardBody.questions ?? []));
+        setSuperDuperHardAvailable(Boolean(body.superDuperHardAvailable));
+
+        const fetches: Promise<unknown>[] = [];
+        if (body.hardAvailable) {
+          fetches.push(
+            fetch('/api/practice/questions?set=hard')
+              .then((res) => res.json())
+              .then((hardBody) => setHardQuestions(hardBody.questions ?? []))
+          );
+        }
+        if (body.superDuperHardAvailable) {
+          fetches.push(
+            fetch('/api/practice/questions?set=superDuperHard')
+              .then((res) => res.json())
+              .then((sdBody) => setSuperDuperHardQuestions(sdBody.questions ?? []))
+          );
+        }
+        return Promise.all(fetches);
       })
       .catch(() => setQuestions([]));
   }, []);
@@ -180,8 +196,8 @@ export default function PracticePage() {
         <p className="max-w-sm opacity-70">
           Answer {Math.min(ROUND_SIZE, activePool?.length ?? 0)} questions on your own — no team, no robots, just you.
         </p>
-        {hardAvailable && (
-          <div className="flex gap-2">
+        {(hardAvailable || superDuperHardAvailable) && (
+          <div className="flex flex-wrap justify-center gap-2">
             <button
               onClick={() => setDifficulty('standard')}
               className={`rounded-lg px-4 py-2 font-bold ${
@@ -192,16 +208,30 @@ export default function PracticePage() {
             >
               Normal
             </button>
-            <button
-              onClick={() => setDifficulty('hard')}
-              className={`rounded-lg px-4 py-2 font-bold ${
-                difficulty === 'hard'
-                  ? 'bg-rose-500 text-white'
-                  : 'border border-neutral-300 text-neutral-600 dark:border-neutral-700 dark:text-neutral-300'
-              }`}
-            >
-              Hard 🔥
-            </button>
+            {hardAvailable && (
+              <button
+                onClick={() => setDifficulty('hard')}
+                className={`rounded-lg px-4 py-2 font-bold ${
+                  difficulty === 'hard'
+                    ? 'bg-rose-500 text-white'
+                    : 'border border-neutral-300 text-neutral-600 dark:border-neutral-700 dark:text-neutral-300'
+                }`}
+              >
+                Hard 🔥
+              </button>
+            )}
+            {superDuperHardAvailable && (
+              <button
+                onClick={() => setDifficulty('superDuperHard')}
+                className={`rounded-lg px-4 py-2 font-bold ${
+                  difficulty === 'superDuperHard'
+                    ? 'bg-purple-700 text-white'
+                    : 'border border-neutral-300 text-neutral-600 dark:border-neutral-700 dark:text-neutral-300'
+                }`}
+              >
+                Super Duper Hard 🔥🔥🔥
+              </button>
+            )}
           </div>
         )}
         <input

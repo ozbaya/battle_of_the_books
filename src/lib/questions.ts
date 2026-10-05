@@ -74,12 +74,18 @@ export function parseQuestionsMarkdown(content: string): Question[] {
   return questions;
 }
 
-/** 'hard' is an admin-authored, optional second question file (questions/hard.md) for a tougher Practice/Quiz round. Empty until filled in. */
-export type QuestionSet = 'standard' | 'hard';
+/**
+ * 'hard' and 'superDuperHard' are admin-authored, optional extra question
+ * files (questions/hard.md, questions/"super duper hard.md") for tougher
+ * Practice (and, for 'hard' only — see questionSetForDifficulty — team
+ * game) rounds. Empty until filled in.
+ */
+export type QuestionSet = 'standard' | 'hard' | 'superDuperHard';
 
 const QUESTION_FILES: Record<QuestionSet, string> = {
   standard: 'questions.md',
   hard: 'hard.md',
+  superDuperHard: 'super duper hard.md',
 };
 
 export function getQuestions(set: QuestionSet = 'standard'): Question[] {
@@ -88,7 +94,21 @@ export function getQuestions(set: QuestionSet = 'standard'): Question[] {
   return parseQuestionsMarkdown(content);
 }
 
-/** Team games on "hard" difficulty draw from questions/hard.md; easy/medium use the standard set. */
+const DIFFICULTY_TO_SET: Record<Difficulty, QuestionSet> = {
+  easy: 'standard',
+  medium: 'standard',
+  hard: 'hard',
+  superDuperHard: 'superDuperHard',
+};
+
+/** Team games pick their question bank from their own difficulty: easy/medium use the standard set, hard uses hard.md, superDuperHard uses "super duper hard.md". */
 export function questionSetForDifficulty(difficulty: Difficulty): QuestionSet {
-  return difficulty === 'hard' ? 'hard' : 'standard';
+  return DIFFICULTY_TO_SET[difficulty];
+}
+
+/** Parses a `?set=` query/body value from Practice's API routes, defaulting to 'standard' for anything unrecognized. */
+export function parseQuestionSet(value: string | null | undefined): QuestionSet {
+  if (value === 'hard') return 'hard';
+  if (value === 'superDuperHard') return 'superDuperHard';
+  return 'standard';
 }
