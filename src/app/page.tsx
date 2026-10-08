@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useActiveGames } from '@/lib/hooks/useActiveGames';
 import { useLeaderboard } from '@/lib/hooks/useLeaderboard';
 
-const LEADERBOARD_COLLAPSED_COUNT = 3;
+const LEADERBOARD_COLLAPSED_COUNT = 2;
 
 const PHASE_LABEL: Record<string, string> = {
   LOBBY: 'Waiting to start',
@@ -117,7 +117,7 @@ function LeaderboardSection() {
         {hasMore && (
           <button
             onClick={() => setExpanded((v) => !v)}
-            aria-label={expanded ? 'Show top 3 only' : 'Show full leaderboard'}
+            aria-label={expanded ? 'Show top 2 only' : 'Show full leaderboard'}
             aria-expanded={expanded}
             className="flex h-8 w-8 items-center justify-center rounded-full bg-black/10 shadow-sm hover:bg-black/20 dark:bg-white/15 dark:hover:bg-white/25"
           >
