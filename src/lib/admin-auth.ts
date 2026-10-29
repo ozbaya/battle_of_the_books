@@ -34,6 +34,8 @@ export const adminCookieOptions = {
 };
 
 export function isAuthorizedAdmin(request: NextRequest): boolean {
+  // Without a password the HMAC key would be '' and the token publicly computable.
+  if (!process.env.ADMIN_PASSWORD) return false;
   const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
   if (!token) return false;
   return timingSafeEqualStrings(token, expectedAdminToken());
