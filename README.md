@@ -1,5 +1,7 @@
 # 📚 Battle of the Books Trainer
 
+**Play it here: <https://battle-of-the-books-three.vercel.app/>**
+
 ## Why I built this
 
 My 9-year-old son and his friends are competing in **Battle of the Books** at school. In this reading
